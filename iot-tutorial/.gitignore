@@ -1,3 +1,5 @@
 .terraform*
 backend.config
 tfplan
+
+node_modules
