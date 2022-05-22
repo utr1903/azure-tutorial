@@ -23,24 +23,4 @@ resource "azurerm_iothub" "iot" {
     endpoint_names = [local.project_iot_hub_name]
     enabled        = true
   }
-
-  # enrichment {
-  #   key            = "tenant"
-  #   value          = "$twin.tags.Tenant"
-  #   endpoint_names = ["export", "export2"]
-  # }
-
-  # cloud_to_device {
-  #   max_delivery_count = 30
-  #   default_ttl        = "PT1H"
-  #   feedback {
-  #     time_to_live       = "PT1H10M"
-  #     max_delivery_count = 15
-  #     lock_duration      = "PT30S"
-  #   }
-  # }
-
-  # tags = {
-  #   purpose = "testing"
-  # }
 }
