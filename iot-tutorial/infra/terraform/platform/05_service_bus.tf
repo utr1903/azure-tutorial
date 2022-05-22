@@ -14,8 +14,8 @@ resource "azurerm_servicebus_namespace" "iot" {
 
 # Service Bus Queue
 resource "azurerm_servicebus_queue" "input" {
-  name                = "input"
-  namespace_id        = azurerm_servicebus_namespace.iot.id
+  name         = "input"
+  namespace_id = azurerm_servicebus_namespace.iot.id
 
   enable_partitioning = false
 }
