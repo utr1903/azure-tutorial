@@ -79,3 +79,26 @@ if [[ $terraformBlobContainer == "" ]]; then
 else
   echo -e " -> Terraform blob container already exists.\n"
 fi
+
+### Project Terraform deployment
+azureAccount=$(az account show)
+tenantId=$(echo $azureAccount | jq .tenantId)
+subscriptionId=$(echo $azureAccount | jq .id)
+
+echo -e "
+tenant_id            = ${tenantId}
+subscription_id      = ${subscriptionId}
+resource_group_name  = ${sharedResourceGroupName}
+storage_account_name = ${sharedStorageAccountName}
+container_name       = ${project}
+key                  = ${stageShort}${instance}.tfstate"
+
+terraform -chdir=../terraform init
+
+terraform -chdir=../terraform plan \
+  -var project=$project \
+  -var location_long=$locationLong \
+  -var location_short=$locationShort \
+  -var stage_short=$stageShort \
+  -var stage_long=$stageLong \
+  -var instance=$instance \
