@@ -103,3 +103,5 @@ terraform -chdir=../terraform/platform plan \
   -var stage_long=$stageLong \
   -var instance=$instance \
   -out "./tfplan"
+
+terraform -chdir=../terraform/platform apply tfplan
