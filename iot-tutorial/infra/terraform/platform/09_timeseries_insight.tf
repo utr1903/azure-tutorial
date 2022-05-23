@@ -26,6 +26,6 @@ resource "azurerm_iot_time_series_insights_event_source_eventhub" "iot" {
   eventhub_name       = azurerm_eventhub.iot.name
   consumer_group_name = azurerm_eventhub_consumer_group.iot.name
 
-  shared_access_key        = azurerm_eventhub_authorization_rule.iot.primary_key
-  shared_access_key_name   = azurerm_eventhub_authorization_rule.iot.name
+  shared_access_key        = azurerm_eventhub_authorization_rule.tsi.primary_key
+  shared_access_key_name   = azurerm_eventhub_authorization_rule.tsi.name
 }

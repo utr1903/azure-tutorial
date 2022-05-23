@@ -29,7 +29,7 @@ locals {
 
   # Kubernetes Cluster
   project_kubernetes_cluster_name = "aks${var.project}${var.location_short}${var.platform}${var.stage_short}${var.instance}"
-  project_kubernetes_cluster_nodepool_name = "aksnp${var.project}${var.location_short}${var.platform}${var.stage_short}${var.instance}"
+  project_kubernetes_cluster_nodepool_name = "rgaksnp${var.project}${var.location_short}${var.platform}${var.stage_short}${var.instance}"
 
   # Function App
   project_function_app_name = "func${var.project}${var.location_short}${var.stage_short}${var.instance}"

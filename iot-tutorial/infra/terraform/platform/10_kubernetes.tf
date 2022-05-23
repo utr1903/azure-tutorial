@@ -6,12 +6,13 @@ resource "azurerm_kubernetes_cluster" "iot" {
   resource_group_name = azurerm_resource_group.iot.name
   location            = azurerm_resource_group.iot.location
 
+  dns_prefix         = var.platform
   kubernetes_version = "1.23.5"
 
   node_resource_group = local.project_kubernetes_cluster_nodepool_name
 
   default_node_pool {
-    name    = "system-pool"
+    name    = "system"
     vm_size = "Standard_D2_v2"
 
     enable_auto_scaling = true
@@ -27,7 +28,7 @@ resource "azurerm_kubernetes_cluster" "iot" {
 
 # Kubernetes Nodepool - Input Processor
 resource "azurerm_kubernetes_cluster_node_pool" "input_processor" {
-  name                  = "input-processor-pool"
+  name                  = "input"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.iot.id
   vm_size               = "Standard_DS2_v2"
 
@@ -41,7 +42,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "input_processor" {
 
 # Kubernetes Nodepool - Timeseries Processor
 resource "azurerm_kubernetes_cluster_node_pool" "timeseries_processor" {
-  name                  = "timeseries-processor-pool"
+  name                  = "timeseries"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.iot.id
   vm_size               = "Standard_DS2_v2"
 
