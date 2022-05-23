@@ -10,13 +10,20 @@
     <None Remove="Azure.Messaging.ServiceBus" />
     <None Remove="ServiceBus\" />
     <None Remove="Azure.Identity" />
+    <None Remove="Microsoft.Azure.Cosmos" />
+    <None Remove="Azure.Messaging.EventHubs" />
+    <None Remove="EventHub\" />
+    <None Remove="Azure.Messaging.EventHubs.Processor" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.8.1" />
     <PackageReference Include="Azure.Identity" Version="1.6.0" />
+    <PackageReference Include="Azure.Messaging.EventHubs" Version="5.7.0" />
+    <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.7.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ServiceBus\" />
+    <Folder Include="EventHub\" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,9 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.EventHubs;
+using Azure.Messaging.EventHubs.Producer;
+using Azure.Messaging.ServiceBus;
+using InputProcessor.EventHub;
 using InputProcessor.ServiceBus;
 using System;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace InputProcessor
@@ -11,6 +13,7 @@ namespace InputProcessor
         private const int MAX_WAIT_TIME_FOR_MESSAGE = 30;
 
         private ServiceBusReceiver _serviceBusReceiver;
+        private EventHubProducerClient _eventHubProducerClient;
 
         public Processor()
         {
@@ -22,6 +25,7 @@ namespace InputProcessor
             try
             {
                 InitializeServiceBus();
+                InitializeEventHub();
 
                 // Listen to messages on the queue.
                 while (true)
@@ -34,6 +38,9 @@ namespace InputProcessor
                     {
                         // Prompt the message.
                         LogServiceBusMessage(receivedMessage);
+
+                        // Send the message to Event Hub.
+                        await SendMessageToEventHub(receivedMessage);
 
                         // Acknowledge message to remove from queue.
                         await AcknowledgeServiceBusMessage(receivedMessage);
@@ -51,6 +58,9 @@ namespace InputProcessor
         private void InitializeServiceBus()
             => _serviceBusReceiver = new ServiceBusHandler().CreateReceiver();
 
+        private void InitializeEventHub()
+            => _eventHubProducerClient = new EventHubHandler().CreateProducerClient();
+
         private async Task<ServiceBusReceivedMessage> ReceiveMessageFromServiceBus()
         {
             Console.WriteLine($"{DateTime.UtcNow}: Receiving message from the Service Bus ...{Environment.NewLine}");
@@ -64,6 +74,20 @@ namespace InputProcessor
         {
             Console.WriteLine($"{DateTime.UtcNow}: Message is retrieved from the queue.{Environment.NewLine}");
             Console.WriteLine($"{DateTime.UtcNow}: {receivedMessage.Body}{Environment.NewLine}");
+        }
+
+        private async Task SendMessageToEventHub(ServiceBusReceivedMessage receivedMessage)
+        {
+            var eventBatch = await _eventHubProducerClient.CreateBatchAsync();
+
+            var eventData = new EventData(receivedMessage.Body);
+
+            if (eventBatch.TryAdd(eventData))
+                Console.WriteLine($"{DateTime.UtcNow}: Event is successfully added to batch.{Environment.NewLine}");
+            else
+                throw new Exception($"{DateTime.UtcNow}: Event is failed to be added to batch.{Environment.NewLine}");
+
+            await _eventHubProducerClient.SendAsync(eventBatch);
         }
 
         private async Task AcknowledgeServiceBusMessage(ServiceBusReceivedMessage receivedMessage)
