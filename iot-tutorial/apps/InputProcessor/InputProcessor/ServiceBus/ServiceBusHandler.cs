@@ -1,13 +1,12 @@
-﻿using Azure.Identity;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using System;
 
 namespace InputProcessor.ServiceBus
 {
     public class ServiceBusHandler
     {
-        private const string SERVICE_BUS_NAMESPACE_NAME = "SERVICE_BUS_NAMESPACE_NAME";
-        private const string SERVICE_BUS_QUEUE = "SERVICE_BUS_QUEUE";
+        private const string SERVICE_BUS_CONNECTION_STRING = "SERVICE_BUS_CONNECTION_STRING";
+        private const string SERVICE_BUS_QUEUE_NAME = "SERVICE_BUS_QUEUE_NAME";
 
         public ServiceBusHandler()
         {
@@ -16,16 +15,13 @@ namespace InputProcessor.ServiceBus
 
         public ServiceBusReceiver CreateReceiver()
         {
-            var serviceBusNamespaceName = Environment.GetEnvironmentVariable(SERVICE_BUS_NAMESPACE_NAME);
+            var serviceBusConnectionString = Environment.GetEnvironmentVariable(SERVICE_BUS_CONNECTION_STRING);
             var serviceBusQueueName = Environment.GetEnvironmentVariable(SERVICE_BUS_QUEUE);
 
             // Create Service Bus connection.
             Console.WriteLine($"{DateTime.UtcNow}: Creating Service Bus connection ...");
 
-            var client = new ServiceBusClient(
-                $"{serviceBusNamespaceName}.servicebus.windows.net",
-                new ManagedIdentityCredential()
-            );
+            var client = new ServiceBusClient(serviceBusConnectionString);
 
             Console.WriteLine($"{DateTime.UtcNow}: -> Service Bus connection is created successfully.{Environment.NewLine}");
 

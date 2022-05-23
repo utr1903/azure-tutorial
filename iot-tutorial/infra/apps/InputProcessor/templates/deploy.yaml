@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+        - name: {{ .Values.name }}
+          image: "{{ .Values.dockerhubName }}/{{ .Values.name }}"
+          env:
+            - name: SERVICE_BUS_CONNECTION_STRING
+              value: {{ .Values.serviceBusConnectionString }}
+            - name: SERVICE_BUS_QUEUE_NAME
+              value: {{ .Values.serviceBusQueueName }}
+            - name: EVENT_HUB_CONNECTION_STRING
+              value: {{ .Values.eventHubConnectionString }}
+            - name: EVENT_HUB_NAME
+              value: {{ .Values.eventHubName }}
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: 400m
+              memory: 1000Mi

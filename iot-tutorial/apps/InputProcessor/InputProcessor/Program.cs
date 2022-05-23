@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace InputProcessor
+﻿namespace InputProcessor
 {
     class Program
     {
-        static void Main(string[] args)
+        public async static void Main(string[] args)
         {
             await new Processor().Run();
         }
