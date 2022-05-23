@@ -9,15 +9,8 @@ stageShort="d"
 instance="001"
 
 ### Set variables
-
-# Shared
-sharedResourceGroupName="rg${project}${locationShort}x000"
-sharedStorageAccountName="st${project}${locationShort}x000"
-
-# Project
-projectResourceGroupName="rg${project}${locationShort}${stageShort}${instance}"
-projectServiceBusName="sb${project}${locationShort}${stageShort}${instance}"
-projectIotHubName="iot${project}${locationShort}${stageShort}${instance}"
+sharedResourceGroupName="rg${project}${locationShort}sharedx000"
+sharedStorageAccountName="st${project}${locationShort}sharedx000"
 
 ### Shared Terraform storage account
 
