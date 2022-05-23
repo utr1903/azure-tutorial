@@ -1,5 +1,7 @@
 ### Variables ###
 
+## General
+
 # project
 variable "project" {
   type    = string
@@ -34,4 +36,18 @@ variable "stage_short" {
 variable "instance" {
   type    = string
   default = "001"
+}
+
+## Specific
+
+# shared
+variable "shared" {
+  type    = string
+  default = "shared"
+}
+
+# platform
+variable "platform" {
+  type    = string
+  default = "platform"
 }
