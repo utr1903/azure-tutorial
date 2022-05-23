@@ -14,11 +14,18 @@ locals {
   # Service Bus
   project_service_bus_namespace_name = "sb${var.project}${var.location_short}${var.stage_short}${var.instance}"
 
+  # Event Hub
+  project_event_hub_namespace_name = "ehn${var.project}${var.location_short}${var.stage_short}${var.instance}"
+  project_event_hub_name = "eh${var.project}${var.location_short}${var.stage_short}${var.instance}"
+
   # IoT Hub
   project_iot_hub_name = "iot${var.project}${var.location_short}${var.stage_short}${var.instance}"
 
   # Storage Account
   project_storage_account_name = "st${var.project}${var.location_short}${var.stage_short}${var.instance}"
+
+  # Timeseries Insight
+  project_timeseries_insight_name = "tsi${var.project}${var.location_short}${var.stage_short}${var.instance}"
 
   # App Service Plan
   project_app_service_plan_name = "plan${var.project}${var.location_short}${var.stage_short}${var.instance}"
