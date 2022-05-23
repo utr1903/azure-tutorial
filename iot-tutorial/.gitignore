@@ -3,3 +3,8 @@ backend.config
 tfplan
 
 node_modules
+
+bin
+obj
+UserPrefs.xml
+InputProcessor-Debug.json
