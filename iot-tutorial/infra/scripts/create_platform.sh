@@ -8,9 +8,18 @@ stageLong="dev"
 stageShort="d"
 instance="001"
 
+shared="shared"
+platform="platform"
+
 ### Set variables
-sharedResourceGroupName="rg${project}${locationShort}sharedx000"
-sharedStorageAccountName="st${project}${locationShort}sharedx000"
+
+# Shared
+sharedResourceGroupName="rg${project}${locationShort}${shared}x000"
+sharedStorageAccountName="st${project}${locationShort}${shared}x000"
+
+# Platform
+resourceGroupName="rg${project}${locationShort}${platform}${stageShort}${instance}"
+aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
 
 ### Shared Terraform storage account
 
