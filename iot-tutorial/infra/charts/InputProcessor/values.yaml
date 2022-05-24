@@ -1,6 +1,6 @@
 name: iproc
 namespace: iproc
-port: 8080
+port: 80
 
 hpa:
   minReplicas: 1
