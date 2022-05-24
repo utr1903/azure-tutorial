@@ -1,5 +1,9 @@
 #!/bin/bash
 
+###################
+### Infra Setup ###
+###################
+
 ### Set parameters
 project="iot"
 locationLong="westeurope"
@@ -30,7 +34,7 @@ sharedResourceGroup=$(az group show \
   2> /dev/null)
 
 if [[ $sharedResourceGroup == "" ]]; then
-  echo -e " -> Shared resource group does not exist. Creating..."
+  echo " -> Shared resource group does not exist. Creating..."
 
   sharedResourceGroup=$(az group create \
     --name $sharedResourceGroupName \
@@ -49,7 +53,7 @@ sharedStorageAccount=$(az storage account show \
   2> /dev/null)
 
 if [[ $sharedStorageAccount == "" ]]; then
-  echo -e " -> Shared storage account does not exist. Creating..."
+  echo " -> Shared storage account does not exist. Creating..."
 
   sharedStorageAccount=$(az storage account create \
     --resource-group $sharedResourceGroupName \
@@ -70,7 +74,7 @@ terraformBlobContainer=$(az storage container show \
   2> /dev/null)
 
 if [[ $terraformBlobContainer == "" ]]; then
-  echo -e " -> Terraform blob container does not exist. Creating..."
+  echo " -> Terraform blob container does not exist. Creating..."
 
   terraformBlobContainer=$(az storage container create \
     --account-name $sharedStorageAccountName \
