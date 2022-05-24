@@ -1,8 +1,10 @@
-﻿namespace InputProcessor
+﻿using System.Threading.Tasks;
+
+namespace InputProcessor
 {
     class Program
     {
-        public async static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             await new Processor().Run();
         }

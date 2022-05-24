@@ -16,7 +16,7 @@ namespace InputProcessor.ServiceBus
         public ServiceBusReceiver CreateReceiver()
         {
             var serviceBusConnectionString = Environment.GetEnvironmentVariable(SERVICE_BUS_CONNECTION_STRING);
-            var serviceBusQueueName = Environment.GetEnvironmentVariable(SERVICE_BUS_QUEUE);
+            var serviceBusQueueName = Environment.GetEnvironmentVariable(SERVICE_BUS_QUEUE_NAME);
 
             // Create Service Bus connection.
             Console.WriteLine($"{DateTime.UtcNow}: Creating Service Bus connection ...");

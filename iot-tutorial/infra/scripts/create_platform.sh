@@ -98,3 +98,9 @@ terraform -chdir=../terraform/platform plan \
   -out "./tfplan"
 
 terraform -chdir=../terraform/platform apply tfplan
+
+# Get AKS credentials
+az aks get-credentials \
+    --resource-group $resourceGroupName \
+    --name $aksName \
+    --overwrite-existing
