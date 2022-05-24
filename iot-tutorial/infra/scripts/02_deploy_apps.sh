@@ -30,6 +30,7 @@ aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
 declare -A iproc
 iproc["name"]="iproc"
 iproc["namespace"]="iproc"
+iproc["nodePoolName"]="input"
 
 ### Build & Push
 
@@ -95,6 +96,7 @@ helm upgrade ${iproc[name]} \
   --set serviceBusQueueName=$serviceBusQueueName \
   --set eventHubConnectionString=$eventHubConnectionString \
   --set eventHubName=$eventHubName \
+  --set nodePoolName=${iproc[nodePoolName]} \
   ../charts/InputProcessor
 
 echo -e " -> Input Processor is successfully deployed.\n"

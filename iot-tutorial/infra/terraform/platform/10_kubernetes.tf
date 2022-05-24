@@ -34,6 +34,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "input_processor" {
 
   orchestrator_version = "1.23.5"
 
+  node_labels {
+    nodePoolName = "input"
+  }
+
   enable_auto_scaling = true
   node_count          = 1
   min_count           = 1
@@ -47,6 +51,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "timeseries_processor" {
   vm_size               = "Standard_DS2_v2"
 
   orchestrator_version = "1.23.5"
+
+  node_labels {
+    nodePoolName = "timeseries"
+  }
 
   enable_auto_scaling = true
   node_count          = 1
