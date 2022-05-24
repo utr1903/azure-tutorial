@@ -33,13 +33,13 @@ iproc["namespace"]="iproc"
 
 ### Build & Push
 
-# # InputProcessor
-# echo -e "\n--- InputProcessor ---\n"
-# docker build \
-#     --tag "${DOCKERHUB_NAME}/${iproc[name]}" \
-#     ../../apps/InputProcessor/InputProcessor/.
-# docker push "${DOCKERHUB_NAME}/${iproc[name]}"
-# echo -e "\n------\n"
+# InputProcessor
+echo -e "\n--- InputProcessor ---\n"
+docker build \
+    --tag "${DOCKERHUB_NAME}/${iproc[name]}" \
+    ../../apps/InputProcessor/InputProcessor/.
+docker push "${DOCKERHUB_NAME}/${iproc[name]}"
+echo -e "\n------\n"
 
 ### Helm
 
