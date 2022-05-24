@@ -3,10 +3,10 @@
 namespace InputProcessor.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("health")]
     public class HealthController : Controller
     {
-        [HttpGet("/")]
+        [HttpGet("")]
         public ActionResult CheckHealth()
         {
             return new OkObjectResult("OK!");
