@@ -15,6 +15,10 @@ resource "azurerm_kubernetes_cluster" "iot" {
     name    = "system"
     vm_size = "Standard_D2_v2"
 
+    node_labels = {
+      nodePoolName = "system"
+    }
+
     enable_auto_scaling = true
     node_count          = 1
     min_count           = 1
@@ -34,7 +38,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "input_processor" {
 
   orchestrator_version = "1.23.5"
 
-  node_labels {
+  node_labels = {
     nodePoolName = "input"
   }
 
@@ -52,7 +56,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "timeseries_processor" {
 
   orchestrator_version = "1.23.5"
 
-  node_labels {
+  node_labels = {
     nodePoolName = "timeseries"
   }
 
