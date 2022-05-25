@@ -14,3 +14,6 @@
 
 **InfluxQL**
 - https://docs.influxdata.com/influxdb/v2.2/query-data/influxql/
+
+**NewRelic Agent API**
+- https://docs.newrelic.com/docs/data-apis/custom-data/custom-events/collect-custom-attributes/
