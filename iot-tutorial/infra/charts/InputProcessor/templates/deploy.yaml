@@ -24,6 +24,16 @@ spec:
               value: {{ .Values.eventHubConnectionString }}
             - name: EVENT_HUB_NAME
               value: {{ .Values.eventHubName }}
+            - name: INFLUXDB_SERVICE_NAME
+              value: {{ .Values.influxdbServiceName }}
+            - name: INFLUXDB_NAMESPACE
+              value: {{ .Values.influxdbNamespace }}
+            - name: INFLUXDB_PORT
+              value: "{{ .Values.influxdbPort }}"
+            - name: INFLUXDB_ORGANIZATION_NAME
+              value: {{ .Values.influxdbOrganization }}
+            - name: INFLUXDB_BUCKET_NAME
+              value: {{ .Values.influxdbBucket }}
           resources:
             requests:
               cpu: 200m
