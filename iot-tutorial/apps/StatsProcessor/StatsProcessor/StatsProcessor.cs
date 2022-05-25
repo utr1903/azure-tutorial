@@ -6,22 +6,36 @@ using System.Threading.Tasks;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using NewRelic.Api.Agent;
 
 namespace StatsProcessor
 {
-    public static class StatsProcessor
+    public class StatsProcessor
     {
+        public StatsProcessor()
+        {
+            
+        }
+
         [FunctionName("StatsProcessor")]
-        public static async Task Run(
+        public async Task Run(
             [
                 EventHubTrigger("ehioteuwplatformd001",
-                Connection = "Connection")
+                    Connection = "EventHubConnection"
+                )
                 //Connection = "Endpoint=sb://<service-bus-resource>.servicebus.windows.net;Authentication=Managed Identity;")
             ] EventData[] events,
             ILogger log
         )
         {
             var exceptions = new List<Exception>();
+
+            //IAgent agent = NewRelic.Api.Agent.NewRelic.GetAgent();
+            //ITransaction transaction = agent.CurrentTransaction;
+
+            //transaction
+            //    .AddCustomAttribute("Discount Code", "Summer Super Sale")
+            //    .AddCustomAttribute("Item Code", 31456);
 
             foreach (EventData eventData in events)
             {

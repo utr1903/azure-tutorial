@@ -8,3 +8,4 @@ bin
 obj
 UserPrefs.xml
 InputProcessor-Debug.json
+StatsProcessor-Debug.json

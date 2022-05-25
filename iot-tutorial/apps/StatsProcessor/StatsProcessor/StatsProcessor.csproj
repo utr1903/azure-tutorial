@@ -6,9 +6,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="4.1.1" />
+    <PackageReference Include="NewRelic.Agent" Version="9.8.1" />
+    <PackageReference Include="NewRelic.Agent.Api" Version="9.8.1" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Microsoft.Azure.WebJobs.Extensions.EventHubs" />
+    <None Remove="NewRelic.Agent" />
+    <None Remove="NewRelic.Agent.Api" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
