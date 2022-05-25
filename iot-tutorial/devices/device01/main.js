@@ -28,15 +28,16 @@ function messageHandler (msg) {
 
 function generateMessage () {
 
-    const windSpeed = 10 + (Math.random() * 4); // range: [10, 14]
     const temperature = 20 + (Math.random() * 10); // range: [20, 30]
-    const humidity = 60 + (Math.random() * 20); // range: [60, 80]
 
     const data = JSON.stringify({
-        sensorName: deviceId,
-        windSpeed: windSpeed,
-        temperature: temperature,
-        humidity: humidity
+        deviceId: deviceId,
+        deviceName: "device01",
+        value: temperature,
+        tags: {
+            sensorType: "temperature",
+            sensorUnit: "Celcius",
+        }
     });
 
     const message = new Message(data);
