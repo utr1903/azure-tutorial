@@ -108,7 +108,7 @@ kubectl exec "${influxdb[name]}-0" \
   --retention 1 \
   --force
 
-# echo -e " -> Admin is successfully created.\n"
+echo -e " -> Admin is successfully created.\n"
 
 # Input Processor
 echo "Deploying Input Processor ..."

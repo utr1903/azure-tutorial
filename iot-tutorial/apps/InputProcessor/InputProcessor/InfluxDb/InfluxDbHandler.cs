@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
-using InfluxDB.Client.Writes;
 using InputProcessor.Models;
 
 namespace InputProcessor.InfluxDb
@@ -31,7 +30,7 @@ namespace InputProcessor.InfluxDb
 
         public void CreateClient()
         {
-            Console.WriteLine("Connecting to InfluxDB...");
+            Console.WriteLine($"{DateTime.UtcNow}: Connecting to InfluxDB...{Environment.NewLine}");
 
             var influxDbClient = InfluxDBClientFactory.Create(
                 $"http://{INFLUXDB_SERVICE_NAME}.{INFLUXDB_NAMESPACE}.svc.cluster.local:{INFLUXDB_PORT}",
@@ -46,12 +45,13 @@ namespace InputProcessor.InfluxDb
                 var isConnectionEstablished = influxDbClient.PingAsync().Result;
                 if (isConnectionEstablished)
                 {
-                    Console.WriteLine(" -> Connection to InfluxDB is established successfully.");
+                    Console.WriteLine($"{DateTime.UtcNow}: " +
+                        $"Connection to InfluxDB is established successfully.{Environment.NewLine}");
                     break;
                 }
                 else
                 {
-                    Console.WriteLine(" -> Trying...");
+                    Console.WriteLine($"{DateTime.UtcNow}: Trying...{Environment.NewLine}");
                     Thread.Sleep(3000);
                 }
             }
@@ -76,8 +76,6 @@ namespace InputProcessor.InfluxDb
             }
 
             record += $" value={deviceMessage.Value}";
-
-            Console.WriteLine($"{DateTime.UtcNow}: Record: {record}{Environment.NewLine}");
 
             await _writeApi.WriteRecordAsync(record, WritePrecision.Ns,
                 org: INFLUXDB_ORGANIZATION_NAME,
