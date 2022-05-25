@@ -30,13 +30,16 @@ aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
 declare -A influxdb
 influxdb["name"]="influxdb"
 influxdb["namespace"]="influxdb"
+influxdb["port"]="8086"
 influxdb["nodePoolName"]="timeseries"
-
+influxdb["org"]="myorg"
+influxdb["bucket"]="mybucket"
 
 # InputProcessor
 declare -A iproc
 iproc["name"]="iproc"
 iproc["namespace"]="iproc"
+iproc["port"]="80"
 iproc["nodePoolName"]="input"
 
 ### Build & Push
@@ -86,15 +89,26 @@ helm upgrade ${influxdb[name]} \
   --debug \
   --create-namespace \
   --namespace ${influxdb[namespace]} \
-  --set dockerhubName=$DOCKERHUB_NAME \
-  --set serviceBusConnectionString=$serviceBusConnectionString \
-  --set serviceBusQueueName=$serviceBusQueueName \
-  --set eventHubConnectionString=$eventHubConnectionString \
-  --set eventHubName=$eventHubName \
   --set nodePoolName=${influxdb[nodePoolName]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set ports.http=${influxdb[port]} \
   ../charts/influxdb
 
 echo -e " -> InfluxDB is successfully deployed.\n"
+
+echo -e "Creating InfluxDB admin..."
+
+kubectl exec "${influxdb[name]}-0" \
+  --namespace ${influxdb[namespace]} \
+  -- influx setup \
+  --username "admin" \
+  --password "admin123" \
+  --org ${influxdb[org]} \
+  --bucket ${influxdb[bucket]} \
+  --retention 1 \
+  --force
+
+# echo -e " -> Admin is successfully created.\n"
 
 # Input Processor
 echo "Deploying Input Processor ..."
@@ -117,12 +131,18 @@ helm upgrade ${iproc[name]} \
   --debug \
   --create-namespace \
   --namespace ${iproc[namespace]} \
+  --set nodePoolName=${iproc[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
+  --set port=${iproc[port]} \
   --set serviceBusConnectionString=$serviceBusConnectionString \
   --set serviceBusQueueName=$serviceBusQueueName \
   --set eventHubConnectionString=$eventHubConnectionString \
   --set eventHubName=$eventHubName \
-  --set nodePoolName=${iproc[nodePoolName]} \
+  --set influxdbServiceName=${influxdb[name]} \
+  --set influxdbNamespace=${influxdb[namespace]} \
+  --set influxdbPort=${influxdb[port]} \
+  --set influxdbOrganization=${influxdb[org]} \
+  --set influxdbBucket=${influxdb[bucket]} \
   ../charts/InputProcessor
 
 echo -e " -> Input Processor is successfully deployed.\n"
