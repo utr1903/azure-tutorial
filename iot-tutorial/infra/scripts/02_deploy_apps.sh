@@ -26,6 +26,13 @@ eventHubName="eh${project}${locationShort}${platform}${stageShort}${instance}"
 
 aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
 
+# Influx DB
+declare -A influxdb
+influxdb["name"]="influxdb"
+influxdb["namespace"]="influxdb"
+influxdb["nodePoolName"]="timeseries"
+
+
 # InputProcessor
 declare -A iproc
 iproc["name"]="iproc"
@@ -70,7 +77,26 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 
 echo -e " -> Ingress Controller is successfully deployed.\n"
 
-# InputProcessor
+# Influx DB
+echo "Deploying Influx DB ..."
+
+helm upgrade ${influxdb[name]} \
+  --install \
+  --wait \
+  --debug \
+  --create-namespace \
+  --namespace ${influxdb[namespace]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set serviceBusConnectionString=$serviceBusConnectionString \
+  --set serviceBusQueueName=$serviceBusQueueName \
+  --set eventHubConnectionString=$eventHubConnectionString \
+  --set eventHubName=$eventHubName \
+  --set nodePoolName=${influxdb[nodePoolName]} \
+  ../charts/influxdb
+
+echo -e " -> InfluxDB is successfully deployed.\n"
+
+# Input Processor
 echo "Deploying Input Processor ..."
 
 serviceBusConnectionString=$(az servicebus namespace authorization-rule keys list \

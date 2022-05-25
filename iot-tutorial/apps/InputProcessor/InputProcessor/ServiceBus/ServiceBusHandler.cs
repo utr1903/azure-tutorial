@@ -1,8 +1,9 @@
-﻿using Azure.Messaging.EventHubs;
-using Azure.Messaging.EventHubs.Producer;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using InputProcessor.EventHub;
+using InputProcessor.InfluxDb;
+using InputProcessor.Models;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,9 @@ namespace InputProcessor.ServiceBus
         private string _serviceBusConnectionString;
         private string _serviceBusQueueName;
 
-        private EventHubProducerClient _eventHubProducerClient;
+        private EventHubHandler _eventHubHandler;
+        private InfluxDbHandler _influxDbHandler;
+
         private ServiceBusClient _client;
         private ServiceBusProcessor _processor;
 
@@ -22,6 +25,9 @@ namespace InputProcessor.ServiceBus
         {
             // Create Event Hub producer client.
             CreateEventhHubProducer();
+
+            // Create InfluxDB writer client.
+            CreateInfluxDbClient();
 
             // Get Service Bus credentials.
             GetServiceBusCredentials();
@@ -78,7 +84,17 @@ namespace InputProcessor.ServiceBus
         /// </summary>
         private void CreateEventhHubProducer()
         {
-            _eventHubProducerClient = new EventHubHandler().CreateProducerClient();
+            _eventHubHandler = new EventHubHandler();
+            _eventHubHandler.CreateProducerClient();
+        }
+
+        /// <summary>
+        ///     Creates InfluxDB client.
+        /// </summary>
+        private void CreateInfluxDbClient()
+        {
+            _influxDbHandler = new InfluxDbHandler();
+            _influxDbHandler.CreateClient();
         }
 
         /// <summary>
@@ -138,10 +154,16 @@ namespace InputProcessor.ServiceBus
             try
             {
                 string messageBody = args.Message.Body.ToString();
+
                 Console.WriteLine($"Received: {messageBody}");
 
-                // Send the message.
+                var deviceMessage = ParseMessage(args.Message);
+
+                // Send the message to Event Hub.
                 await SendMessageToEventHub(messageBody);
+
+                // Write the message to InfluxDB.
+                await WriteMessageToInfluxDb(deviceMessage);
 
                 // Acknowledge the message.
                 await args.CompleteMessageAsync(args.Message);
@@ -155,25 +177,35 @@ namespace InputProcessor.ServiceBus
         }
 
         /// <summary>
+        ///     Parse message into object.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns>
+        ///     DeviceMessage.
+        /// </returns>
+        private DeviceMessage ParseMessage(ServiceBusReceivedMessage message)
+            => JsonConvert.DeserializeObject<DeviceMessage>(
+                message.Body.ToString());
+
+        /// <summary>
         ///     Send message to Event Hub and acknowledge it.
         /// </summary>
-        /// <param name="messageBody"></param>
+        /// <param name="deviceMessage"></param>
         /// <returns>
         ///     Task.
         /// </returns>
-        private async Task SendMessageToEventHub(string messageBody)
-        {
-            var eventBatch = await _eventHubProducerClient.CreateBatchAsync();
+        private async Task SendMessageToEventHub(string deviceMessage)
+            => await _eventHubHandler.SendMessage(deviceMessage);
 
-            var eventData = new EventData(messageBody);
-
-            if (eventBatch.TryAdd(eventData))
-                Console.WriteLine($"{DateTime.UtcNow}: Event is successfully added to batch.{Environment.NewLine}");
-            else
-                throw new Exception($"{DateTime.UtcNow}: Event is failed to be added to batch.{Environment.NewLine}");
-
-            await _eventHubProducerClient.SendAsync(eventBatch);
-        }
+        /// <summary>
+        ///     Writes message to Influx DB.
+        /// </summary>
+        /// <param name="deviceMessage"></param>
+        /// <returns>
+        ///     Task.
+        /// </returns>
+        private async Task WriteMessageToInfluxDb(DeviceMessage deviceMessage)
+            => await _influxDbHandler.WriteMessage(deviceMessage);
 
         /// <summary>
         ///     Catches the error and logs it.
