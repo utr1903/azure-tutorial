@@ -1,0 +1,7 @@
+name: grafana
+namespace: grafana
+port: 3000
+
+image:
+  repository: grafana/grafana
+  tag: 8.5.3

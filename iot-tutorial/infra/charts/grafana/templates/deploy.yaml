@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+        - name: {{ .Values.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: admin
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: admin123
+          ports:
+            - name: http
+              containerPort: {{ .Values.port }}
+              protocol: TCP
+          # volumeMounts:
+          #   - name: config
+          #     mountPath: "/etc/grafana/grafana.ini"
+          #     subPath: grafana.ini
+            # - name: storage
+            #   mountPath: "/var/lib/grafana"
+            # - name: dashboards
+            #   mountPath: "/var/lib/grafana/dashboards/...json"
+            #   subPath: ".json"
+            # - name: dashboards-...
+            #   mountPath: "/var/lib/grafana/dashboards/..."
+            # - name: config
+            #   mountPath: "/etc/grafana/provisioning/datasources/..."
+            #   subPath: ...
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: {{ .Values.port }}
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: {{ .Values.port }}
+          resources:
+      nodeSelector:
+        nodePoolName: {{ .Values.nodePoolName }}
+      # volumes:
+      #   - name: config
+      #     configMap:
+      #       name: {{ .Values.name }}
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: storage
+  #     spec:
+  #       accessModes: ["ReadWriteOnce"]
+  #       resources:
+  #         requests:
+  #           storage: 1Gi
+
