@@ -35,6 +35,13 @@ influxdb["nodePoolName"]="timeseries"
 influxdb["org"]="myorg"
 influxdb["bucket"]="mybucket"
 
+# Grafana
+declare -A grafana
+grafana["name"]="grafana"
+grafana["namespace"]="grafana"
+grafana["port"]="3000"
+grafana["nodePoolName"]="timeseries"
+
 # InputProcessor
 declare -A iproc
 iproc["name"]="iproc"
@@ -89,14 +96,15 @@ helm upgrade ${influxdb[name]} \
   --debug \
   --create-namespace \
   --namespace ${influxdb[namespace]} \
+  --set name=${influxdb[name]} \
   --set nodePoolName=${influxdb[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
   --set ports.http=${influxdb[port]} \
   ../charts/influxdb
 
-echo -e " -> InfluxDB is successfully deployed.\n"
+echo -e " -> Influx DB is successfully deployed.\n"
 
-echo -e "Creating InfluxDB admin..."
+echo -e "Creating Influx DB admin..."
 
 kubectl exec "${influxdb[name]}-0" \
   --namespace ${influxdb[namespace]} \
@@ -105,10 +113,33 @@ kubectl exec "${influxdb[name]}-0" \
   --password "admin123" \
   --org ${influxdb[org]} \
   --bucket ${influxdb[bucket]} \
-  --retention 1 \
+  --retention "1h" \
   --force
 
 echo -e " -> Admin is successfully created.\n"
+
+# Grafana
+echo "Deploying Grafana ..."
+
+# influxDbTokenForGrafana=$(kubectl exec "${influxdb[name]}-0" \
+#   --namespace ${influxdb[namespace]} \
+#   -- influx auth create \
+#   --all-access --json \
+#   | jq -r .token)
+
+helm upgrade ${grafana[name]} \
+  --install \
+  --wait \
+  --debug \
+  --create-namespace \
+  --namespace ${grafana[namespace]} \
+  --set name=${grafana[name]} \
+  --set nodePoolName=${grafana[nodePoolName]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set port=${grafana[port]} \
+  ../charts/grafana
+
+echo -e " -> Grafana is successfully deployed.\n"
 
 # Input Processor
 echo "Deploying Input Processor ..."
@@ -131,6 +162,7 @@ helm upgrade ${iproc[name]} \
   --debug \
   --create-namespace \
   --namespace ${iproc[namespace]} \
+  --set name=${iproc[name]} \
   --set nodePoolName=${iproc[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
   --set port=${iproc[port]} \
