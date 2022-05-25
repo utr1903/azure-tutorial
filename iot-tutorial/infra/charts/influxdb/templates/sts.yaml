@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  serviceName: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - name: {{ .Values.name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+          # - name: INFLUXDB_HOSTNAME
+          #   value: host
+          - name: INFLUXDB_ADMIN_USER
+            value: admin
+          - name: INFLUXDB_ADMIN_PASSWORD
+            value: admin123
+        # resources:
+        #   requests:
+        #     cpu: 100m
+        #     memory: 200Mi
+        #   limits:
+        #     cpu: 300m
+        #     memory: 600Mi
+        ports:
+        - name: api
+          containerPort: {{ .Values.ports.http }}
+        - name: rpc
+          containerPort: {{ .Values.ports.rpc }}
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: api
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: api
+            scheme: HTTP
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        volumeMounts:
+        - name: config
+          mountPath: /etc/influxdb
+        - name: {{ .Values.name }}-data
+          mountPath: /var/lib/influxdb
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Values.name }}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.name }}-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

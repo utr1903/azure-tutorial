@@ -1,0 +1,8 @@
+name: influxdb
+ports:
+  http: 8086
+  rpc: 8088
+
+image:
+  repository: influxdb
+  tag: 2.2

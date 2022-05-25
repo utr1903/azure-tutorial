@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+data:
+  influxdb.conf: |+
+    reporting-disabled = false
+    bind-address = ":{{ .Values.ports.rpc }}"
+
+    [meta]
+      dir = "/var/lib/influxdb/meta"
+
+    [data]
+      dir = "/var/lib/influxdb/data"
+      wal-dir = "/var/lib/influxdb/wal"
+
+    #[retention]
+
+    [http]
+      enabled = true
+      flux-enabled = false
+      bind-address = ":{{ .Values.ports.http }}"
+      auth-enabled = false
+      log-enabled = true
