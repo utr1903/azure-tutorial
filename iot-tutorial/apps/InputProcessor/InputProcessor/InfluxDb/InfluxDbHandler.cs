@@ -10,30 +10,31 @@ namespace InputProcessor.InfluxDb
 {
     public class InfluxDbHandler
     {
-        private const string INFLUXDB_SERVICE_NAME = "INFLUXDB_SERVICE_NAME";
-        private const string INFLUXDB_NAMESPACE = "INFLUXDB_NAMESPACE";
-        private const string INFLUXDB_PORT = "INFLUXDB_PORT";
+        private readonly string INFLUXDB_SERVICE_NAME;
+        private readonly string INFLUXDB_NAMESPACE;
+        private readonly string INFLUXDB_PORT;
 
-        private const string INFLUXDB_ORGANIZATION_NAME = "INFLUXDB_ORGANIZATION_NAME";
-        private const string INFLUXDB_BUCKET_NAME = "INFLUXDB_BUCKET_NAME";
+        private readonly string INFLUXDB_ORGANIZATION_NAME;
+        private readonly string INFLUXDB_BUCKET_NAME;
 
         private WriteApiAsync _writeApi;
 
         public InfluxDbHandler()
         {
+            INFLUXDB_SERVICE_NAME = Environment.GetEnvironmentVariable("INFLUXDB_SERVICE_NAME");
+            INFLUXDB_NAMESPACE = Environment.GetEnvironmentVariable("INFLUXDB_NAMESPACE");
+            INFLUXDB_PORT = Environment.GetEnvironmentVariable("INFLUXDB_PORT");
 
+            INFLUXDB_ORGANIZATION_NAME = Environment.GetEnvironmentVariable("INFLUXDB_ORGANIZATION_NAME");
+            INFLUXDB_BUCKET_NAME = Environment.GetEnvironmentVariable("INFLUXDB_BUCKET_NAME");
         }
 
         public void CreateClient()
         {
             Console.WriteLine("Connecting to InfluxDB...");
 
-            var influxDbServiceName = Environment.GetEnvironmentVariable(INFLUXDB_SERVICE_NAME);
-            var influxDbNamespace = Environment.GetEnvironmentVariable(INFLUXDB_NAMESPACE);
-            var influxDbPort = Environment.GetEnvironmentVariable(INFLUXDB_PORT);
-
             var influxDbClient = InfluxDBClientFactory.Create(
-                $"http://{influxDbServiceName}.{influxDbNamespace}.svc.cluster.local:{influxDbPort}",
+                $"http://{INFLUXDB_SERVICE_NAME}.{INFLUXDB_NAMESPACE}.svc.cluster.local:{INFLUXDB_PORT}",
                 "admin",
                 "admin123".ToCharArray()
             );
@@ -60,16 +61,29 @@ namespace InputProcessor.InfluxDb
 
         public async Task WriteMessage(DeviceMessage deviceMessage)
         {
-            var point = PointData.Measurement(deviceMessage.DeviceName)
-                .Tag("location", "west")
-                .Field("value", deviceMessage.Value)
-                .Timestamp(DateTime.UtcNow.AddSeconds(-10), WritePrecision.Ns);
+            Console.WriteLine($"{DateTime.UtcNow}: Writing message to InfluxDB...{Environment.NewLine}");
 
+            var record = $"{deviceMessage.DeviceName},";
+
+            var counter = 0;
             foreach (var tag in deviceMessage.Tags)
-                point.Tag(tag.Key, tag.Value);
+            {
+                ++counter;
+                record += $"{tag.Key}={tag.Value}";
 
-            await _writeApi.WritePointAsync(point, INFLUXDB_BUCKET_NAME,
-                INFLUXDB_ORGANIZATION_NAME);
+                if (counter != deviceMessage.Tags.Keys.Count)
+                    record += ",";
+            }
+
+            record += $" value={deviceMessage.Value}";
+
+            Console.WriteLine($"{DateTime.UtcNow}: Record: {record}{Environment.NewLine}");
+
+            await _writeApi.WriteRecordAsync(record, WritePrecision.Ns,
+                org: INFLUXDB_ORGANIZATION_NAME,
+                bucket: INFLUXDB_BUCKET_NAME);
+
+            Console.WriteLine($"{DateTime.UtcNow}: Message is successfully written.{Environment.NewLine}");
         }
     }
 }
