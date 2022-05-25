@@ -60,6 +60,8 @@ spec:
       - name: config
         configMap:
           name: {{ .Values.name }}
+      nodeSelector:
+        nodePoolName: {{ .Values.nodePoolName }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.name }}-data
