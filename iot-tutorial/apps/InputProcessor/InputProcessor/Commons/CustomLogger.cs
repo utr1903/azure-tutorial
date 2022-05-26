@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace InputProcessor.Commons
 {
@@ -15,51 +14,52 @@ namespace InputProcessor.Commons
             string value = null
         )
         {
-            switch(logLevel)
+            var log = CreateLogMessage(logLevel, className, methodName, message, deviceName, value);
+
+            switch (logLevel)
             {
                 case LogLevel.Information:
-                    logger.LogInformation(
-                        message,
-                        className,
-                        methodName,
-                        deviceName,
-                        value
-                    );
+                    logger.LogInformation(log);
                     break;
 
                 case LogLevel.Debug:
-                    logger.LogDebug(
-                        message,
-                        className,
-                        methodName,
-                        deviceName,
-                        value
-                    );
+                    logger.LogDebug(log);
                     break;
 
                 case LogLevel.Warning:
-                    logger.LogWarning(
-                        message,
-                        className,
-                        methodName,
-                        deviceName,
-                        value
-                    );
+                    logger.LogWarning(log);
                     break;
 
                 case LogLevel.Error:
-                    logger.LogError(
-                        message,
-                        className,
-                        methodName,
-                        deviceName,
-                        value
-                    );
+                    logger.LogError(log);
                     break;
 
                 default:
                     break;
             }
+        }
+
+        private static string CreateLogMessage(
+            LogLevel logLevel,
+            string className,
+            string methodName,
+            string message,
+            string deviceName,
+            string value
+        )
+        {
+            var log = $"logLevel:{logLevel}," +
+                $"className:{className}," +
+                $"methodName:{methodName}," +
+                $"message:{message}";
+
+            if (deviceName != null)
+                log += $",deviceName:{deviceName}";
+
+            if (value != null)
+                log += $",value:{value}";
+
+            return log;
         }
     }
 }
