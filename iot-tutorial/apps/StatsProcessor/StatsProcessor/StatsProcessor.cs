@@ -19,7 +19,7 @@ namespace StatsProcessor
         [FunctionName("StatsProcessor")]
         public async Task Run(
             [
-                EventHubTrigger("ehioteuwplatformd001",
+                EventHubTrigger("%EVENT_HUB_NAME%",
                     Connection = "EventHubConnection"
                 )
                 //Connection = "Endpoint=sb://<service-bus-resource>.servicebus.windows.net;Authentication=Managed Identity;")
@@ -41,6 +41,7 @@ namespace StatsProcessor
                 try
                 {
                     string messageBody = eventData.EventBody.ToString();
+
 
                     // Replace these two lines with your processing logic.
                     log.LogInformation($"C# Event Hub trigger function processed a message: {messageBody}");
