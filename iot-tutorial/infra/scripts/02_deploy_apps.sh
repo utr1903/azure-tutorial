@@ -8,10 +8,12 @@
 project="iot"
 locationLong="westeurope"
 locationShort="euw"
-platform="platform"
 stageLong="dev"
 stageShort="d"
 instance="001"
+
+platform="platform"
+stats="stats"
 
 ### Set variables
 
@@ -25,6 +27,8 @@ eventHubNamespaceName="ehn${project}${locationShort}${platform}${stageShort}${in
 eventHubName="eh${project}${locationShort}${platform}${stageShort}${instance}"
 
 aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
+
+statsFunctionAppName="func${project}${locationShort}${stats}${stageShort}${instance}"
 
 # Influx DB
 declare -A influxdb
@@ -42,7 +46,7 @@ grafana["namespace"]="grafana"
 grafana["port"]="3000"
 grafana["nodePoolName"]="timeseries"
 
-# InputProcessor
+# Input Processor
 declare -A iproc
 iproc["name"]="iproc"
 iproc["namespace"]="iproc"
@@ -178,3 +182,25 @@ helm upgrade ${iproc[name]} \
   ../charts/InputProcessor
 
 echo -e " -> Input Processor is successfully deployed.\n"
+
+# # Stats Processor
+# echo "Deploying Stats Processor ..."
+
+# # dotnet build \
+# #   ../../apps/StatsProcessor/StatsProcessor/ \
+# #   -o StatsProcessor.dll
+
+# # zip -r StatsProcessor.zip \
+# #   ../../apps/StatsProcessor/StatsProcessor/ \
+# #   -x \
+# #   "../../apps/StatsProcessor/StatsProcessor/bin/*" \
+# #   "../../apps/StatsProcessor/StatsProcessor/obj/*" \
+# #   "../../apps/StatsProcessor/StatsProcessor/.gitignore" \
+# #   "../../apps/StatsProcessor/StatsProcessor/local.settings.json"
+
+# az functionapp deployment source config-zip \
+#   --resource-group $resourceGroupName \
+#   --name $statsFunctionAppName \
+#   --src "StatsProcessor.zip"
+
+# echo -e " -> Stats Processor is successfully deployed.\n"
