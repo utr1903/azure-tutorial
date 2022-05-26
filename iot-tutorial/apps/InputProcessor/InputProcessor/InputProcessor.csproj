@@ -15,6 +15,7 @@
     <None Remove="InfluxDbHandler\" />
     <None Remove="InfluxDB.Client" />
     <None Remove="Models\" />
+    <None Remove="Commons\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -22,6 +23,7 @@
     <Folder Include="EventHub\" />
     <Folder Include="InfluxDb\" />
     <Folder Include="Models\" />
+    <Folder Include="Commons\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.8.1" />

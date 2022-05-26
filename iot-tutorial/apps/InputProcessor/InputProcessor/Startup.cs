@@ -21,6 +21,7 @@ namespace InputProcessor
         {
             services.AddHostedService<ServiceBusHandler>();
 
+            services.AddLogging();
             services.AddControllers();
         }
 

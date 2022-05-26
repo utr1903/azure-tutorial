@@ -1,8 +1,10 @@
 ﻿using Azure.Messaging.ServiceBus;
+using InputProcessor.Commons;
 using InputProcessor.EventHub;
 using InputProcessor.InfluxDb;
 using InputProcessor.Models;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Threading;
@@ -12,6 +14,8 @@ namespace InputProcessor.ServiceBus
 {
     public class ServiceBusHandler : IHostedService
     {
+        private readonly ILogger _logger;
+
         private string _serviceBusConnectionString;
         private string _serviceBusQueueName;
 
@@ -21,8 +25,11 @@ namespace InputProcessor.ServiceBus
         private ServiceBusClient _client;
         private ServiceBusProcessor _processor;
 
-        public ServiceBusHandler()
+        public ServiceBusHandler(ILogger<ServiceBusHandler> logger)
         {
+            // Set logger.
+            _logger = logger;
+
             // Create Event Hub producer client.
             CreateEventhHubProducer();
 
@@ -31,9 +38,6 @@ namespace InputProcessor.ServiceBus
 
             // Get Service Bus credentials.
             GetServiceBusCredentials();
-
-            // Create Service Bus client.
-            CreateServiceBusClient();
 
             // Create Service Bus processor.
             CreateServiceBusProcessor();
@@ -51,15 +55,13 @@ namespace InputProcessor.ServiceBus
         {
             try
             {
-                Console.WriteLine($"{DateTime.UtcNow}: Starting Service Bus processor...");
+                LogStartingServiceBusProcessor();
 
                 await _processor.StartProcessingAsync();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{DateTime.UtcNow}: Error occurred!");
-                Console.WriteLine($"{DateTime.UtcNow}: -> {e.Message}.{Environment.NewLine}");
-                Console.WriteLine($"{DateTime.UtcNow}: -> {e.InnerException}.{Environment.NewLine}");
+                LogUnexpectedErrorOccured(e);
 
                 await _processor.DisposeAsync();
                 await _client.DisposeAsync();
@@ -84,7 +86,7 @@ namespace InputProcessor.ServiceBus
         /// </summary>
         private void CreateEventhHubProducer()
         {
-            _eventHubHandler = new EventHubHandler();
+            _eventHubHandler = new EventHubHandler(_logger);
             _eventHubHandler.CreateProducerClient();
         }
 
@@ -93,7 +95,7 @@ namespace InputProcessor.ServiceBus
         /// </summary>
         private void CreateInfluxDbClient()
         {
-            _influxDbHandler = new InfluxDbHandler();
+            _influxDbHandler = new InfluxDbHandler(_logger);
             _influxDbHandler.CreateClient();
         }
 
@@ -107,23 +109,13 @@ namespace InputProcessor.ServiceBus
         }
 
         /// <summary>
-        ///     Creates Service Bus client.
-        /// </summary>
-        private void CreateServiceBusClient()
-        {
-            Console.WriteLine($"{DateTime.UtcNow}: Creating Service Bus connection...");
-
-            _client = new ServiceBusClient(_serviceBusConnectionString);
-
-            Console.WriteLine($"{DateTime.UtcNow}: -> Service Bus connection is created successfully.{Environment.NewLine}");
-        }
-
-        /// <summary>
         ///     Creates Service Bus processor.
         /// </summary>
         private void CreateServiceBusProcessor()
         {
-            Console.WriteLine($"{DateTime.UtcNow}: Creating Service Bus processor...");
+            LogCreatingServiceBusProcessor();
+
+            _client = new ServiceBusClient(_serviceBusConnectionString);
 
             var serviceBusProcessorOptions = new ServiceBusProcessorOptions
             {
@@ -138,7 +130,7 @@ namespace InputProcessor.ServiceBus
             // add handler to process any errors
             _processor.ProcessErrorAsync += ErrorHandler;
 
-            Console.WriteLine($"{DateTime.UtcNow}: -> Service Bus processor is created successfully.{Environment.NewLine}");
+            LogServiceBusProcessorCreated();
         }
 
         /// <summary>
@@ -153,14 +145,10 @@ namespace InputProcessor.ServiceBus
         {
             try
             {
-                string messageBody = args.Message.Body.ToString();
-
-                Console.WriteLine($"Received: {messageBody}");
-
                 var deviceMessage = ParseMessage(args.Message);
 
                 // Send the message to Event Hub.
-                await SendMessageToEventHub(messageBody);
+                await SendMessageToEventHub(deviceMessage);
 
                 // Write the message to InfluxDB.
                 await WriteMessageToInfluxDb(deviceMessage);
@@ -170,9 +158,7 @@ namespace InputProcessor.ServiceBus
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{DateTime.UtcNow}: Error occurred!");
-                Console.WriteLine($"{DateTime.UtcNow}: -> {e.Message}.{Environment.NewLine}");
-                Console.WriteLine($"{DateTime.UtcNow}: -> {e.InnerException}.{Environment.NewLine}");
+                LogUnexpectedErrorOccured(e);
             }
         }
 
@@ -184,23 +170,35 @@ namespace InputProcessor.ServiceBus
         ///     DeviceMessage.
         /// </returns>
         private DeviceMessage ParseMessage(ServiceBusReceivedMessage message)
-            => JsonConvert.DeserializeObject<DeviceMessage>(
+        {
+            LogParsingServiceBusMessage();
+
+            var deviceMessage = JsonConvert.DeserializeObject<DeviceMessage>(
                 message.Body.ToString());
+
+            LogServiceBusMessageParsed();
+
+            return deviceMessage;
+        }
 
         /// <summary>
         ///     Send message to Event Hub and acknowledge it.
         /// </summary>
-        /// <param name="deviceMessage"></param>
+        /// <param name="deviceMessage">
+        ///     Device message object.
+        /// </param>
         /// <returns>
         ///     Task.
         /// </returns>
-        private async Task SendMessageToEventHub(string deviceMessage)
+        private async Task SendMessageToEventHub(DeviceMessage deviceMessage)
             => await _eventHubHandler.SendMessage(deviceMessage);
 
         /// <summary>
         ///     Writes message to Influx DB.
         /// </summary>
-        /// <param name="deviceMessage"></param>
+        /// <param name="deviceMessage">
+        ///     Device message object.
+        /// </param>
         /// <returns>
         ///     Task.
         /// </returns>
@@ -216,8 +214,106 @@ namespace InputProcessor.ServiceBus
         /// </returns>
         private Task ErrorHandler(ProcessErrorEventArgs args)
         {
-            Console.WriteLine(args.Exception.ToString());
+            LogServiceBusErrorOccured(args.Exception);
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        ///     Log creating Service Bus processor.
+        /// </summary>
+        private void LogCreatingServiceBusProcessor()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(ServiceBusHandler),
+                nameof(CreateServiceBusProcessor),
+                "Creating Service Bus processor..."
+            );
+        }
+
+        /// <summary>
+        ///     Log Service Bus processor created.
+        /// </summary>
+        private void LogServiceBusProcessorCreated()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(ServiceBusHandler),
+                nameof(CreateServiceBusProcessor),
+                "Service Bus processor is created successfully."
+            );
+        }
+
+        /// <summary>
+        ///     Log starting Service Bus processor.
+        /// </summary>
+        private void LogStartingServiceBusProcessor()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(ServiceBusHandler),
+                nameof(ParseMessage),
+                "Starting Service Bus processor..."
+            );
+        }
+
+        /// <summary>
+        ///     Log parsing Service Bus message.
+        /// </summary>
+        private void LogParsingServiceBusMessage()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(ServiceBusHandler),
+                nameof(ParseMessage),
+                "Parsing Service Bus message..."
+            );
+        }
+
+        /// <summary>
+        ///     Log Service Bus message parsed.
+        /// </summary>
+        private void LogServiceBusMessageParsed()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(ServiceBusHandler),
+                nameof(ParseMessage),
+                "Service Bus message parsed..."
+            );
+        }
+
+        /// <summary>
+        ///     Log unexpected error occurred.
+        /// </summary>
+        private void LogUnexpectedErrorOccured(Exception e)
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Error,
+                nameof(ServiceBusHandler),
+                nameof(MessageHandler),
+                $"Unexpected error! Message: {e.Message}. InnerException:{e.InnerException}."
+            );
+        }
+
+        /// <summary>
+        ///     Log Service Bus error occurred.
+        /// </summary>
+        private void LogServiceBusErrorOccured(Exception e)
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Error,
+                nameof(ServiceBusHandler),
+                nameof(ErrorHandler),
+                $"Service Bus error! Message: {e.Message}. InnerException:{e.InnerException}."
+            );
         }
     }
 }
