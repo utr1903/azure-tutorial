@@ -65,6 +65,30 @@ echo -e "\n------\n"
 
 ### Helm
 
+# Newrelic
+echo "Deploying Newrelic ..."
+
+kubectl apply -f https://download.newrelic.com/install/kubernetes/pixie/latest/px.dev_viziers.yaml && \
+kubectl apply -f https://download.newrelic.com/install/kubernetes/pixie/latest/olm_crd.yaml && \
+helm repo add newrelic https://helm-charts.newrelic.com && helm repo update && \
+kubectl create namespace newrelic ; helm upgrade --install newrelic-bundle newrelic/nri-bundle \
+    --wait \
+    --debug \
+    --set global.licenseKey=$NEWRELIC_LICENSE_KEY \
+    --set global.cluster=$aksName \
+    --namespace=newrelic \
+    --set newrelic-infrastructure.privileged=true \
+    --set global.lowDataMode=true \
+    --set ksm.enabled=true \
+    --set kubeEvents.enabled=true \
+    --set prometheus.enabled=true \
+    --set logging.enabled=true \
+    --set newrelic-pixie.enabled=true \
+    --set newrelic-pixie.apiKey=$PIXIE_API_KEY \
+    --set pixie-chart.enabled=true \
+    --set pixie-chart.deployKey=$PIXIE_DEPLOY_KEY \
+    --set pixie-chart.clusterName=$aksName
+
 # Ingress Controller
 echo "Deploying Ingress Controller ..."
 
