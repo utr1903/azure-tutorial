@@ -6,7 +6,6 @@ resource "azurerm_service_plan" "iot" {
   location            = azurerm_resource_group.iot.location
   resource_group_name = azurerm_resource_group.iot.name
 
-  # kind     = "FunctionApp"
   os_type  = "Linux"
   sku_name = "Y1"
 }
@@ -32,9 +31,9 @@ resource "azurerm_linux_function_app" "iot" {
   }
 }
 
-# Azure Service Bus Data Receiver Role
-resource "azurerm_role_assignment" "service_bus_data_receiver_role_for_function_app" {
-  scope                = azurerm_servicebus_queue.input.id
-  role_definition_name = "Azure Service Bus Data Receiver"
+# Azure Event Hubs Data Receiver
+resource "azurerm_role_assignment" "event_hub_data_receiver_role_for_function_app" {
+  scope                = azurerm_eventhub_consumer_group.stats_function.id
+  role_definition_name = "Azure Event Hubs Data Receiver"
   principal_id         = azurerm_linux_function_app.iot.identity.0.principal_id
 }

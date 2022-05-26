@@ -51,3 +51,9 @@ variable "platform" {
   type    = string
   default = "platform"
 }
+
+# stats
+variable "stats" {
+  type    = string
+  default = "stats"
+}
