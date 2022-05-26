@@ -5,7 +5,7 @@ const Protocol = require('azure-iot-device-mqtt').Mqtt;
 const { Client, Message } = require('azure-iot-device');
 
 // Set variables.
-const deviceId = `device01`;
+const deviceId = `device02`;
 
 // IoT Hub
 let client;
