@@ -97,7 +97,7 @@ resource_group_name=''"'${sharedResourceGroupName}'"''
 storage_account_name=''"'${sharedStorageAccountName}'"''
 container_name=''"'${project}'"''
 key=''"'${stageShort}${instance}.tfstate'"''' \
-> ../terraform/platform/backend.config
+> ../terraform/01_platform/backend.config
 
 terraform -chdir=../terraform/01_platform init --backend-config="./backend.config"
 
