@@ -1,8 +1,8 @@
 ### Function App ###
 
 # App Service Plan
-resource "azurerm_service_plan" "iot" {
-  name                = local.project_app_service_plan_name
+resource "azurerm_service_plan" "stats" {
+  name                = local.project_function_app_stats_plan_name
   location            = azurerm_resource_group.iot.location
   resource_group_name = azurerm_resource_group.iot.name
 
@@ -11,12 +11,12 @@ resource "azurerm_service_plan" "iot" {
 }
 
 # Function App
-resource "azurerm_linux_function_app" "iot" {
-  name                = local.project_function_app_name
+resource "azurerm_linux_function_app" "stats" {
+  name                = local.project_function_app_stats_name
   location            = azurerm_resource_group.iot.location
   resource_group_name = azurerm_resource_group.iot.name
 
-  service_plan_id            = azurerm_service_plan.iot.id
+  service_plan_id            = azurerm_service_plan.stats.id
   storage_account_name       = azurerm_storage_account.iot.name
   storage_account_access_key = azurerm_storage_account.iot.primary_access_key
 
@@ -35,5 +35,5 @@ resource "azurerm_linux_function_app" "iot" {
 resource "azurerm_role_assignment" "event_hub_data_receiver_role_for_function_app" {
   scope                = azurerm_eventhub_consumer_group.stats_function.id
   role_definition_name = "Azure Event Hubs Data Receiver"
-  principal_id         = azurerm_linux_function_app.iot.identity.0.principal_id
+  principal_id         = azurerm_linux_function_app.stats.identity.0.principal_id
 }
