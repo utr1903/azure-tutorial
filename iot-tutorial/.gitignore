@@ -9,3 +9,5 @@ obj
 *.vs
 
 *.zip
+
+.DS_Store
