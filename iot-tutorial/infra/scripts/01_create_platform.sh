@@ -99,9 +99,9 @@ container_name=''"'${project}'"''
 key=''"'${stageShort}${instance}.tfstate'"''' \
 > ../terraform/platform/backend.config
 
-terraform -chdir=../terraform/platform init --backend-config="./backend.config"
+terraform -chdir=../terraform/01_platform init --backend-config="./backend.config"
 
-terraform -chdir=../terraform/platform plan \
+terraform -chdir=../terraform/01_platform plan \
   -var project=$project \
   -var location_long=$locationLong \
   -var location_short=$locationShort \
@@ -110,7 +110,7 @@ terraform -chdir=../terraform/platform plan \
   -var instance=$instance \
   -out "./tfplan"
 
-terraform -chdir=../terraform/platform apply tfplan
+terraform -chdir=../terraform/01_platform apply tfplan
 
 # Get AKS credentials
 az aks get-credentials \
