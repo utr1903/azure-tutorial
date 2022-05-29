@@ -8,9 +8,13 @@
   <ItemGroup>
     <None Remove="Controllers\" />
     <None Remove="Commons\" />
+    <None Remove="NewRelic.Agent" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Commons\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NewRelic.Agent" Version="9.8.1" />
   </ItemGroup>
 </Project>

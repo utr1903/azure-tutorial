@@ -50,20 +50,39 @@ grafana["nodePoolName"]="timeseries"
 declare -A inputprocessor
 inputprocessor["name"]="inputprocessor"
 inputprocessor["namespace"]="inputprocessor"
+inputprocessor["appName"]="InputProcessor"
 inputprocessor["port"]="80"
 inputprocessor["nodePoolName"]="input"
 
-### Build & Push
+# Stats Processor
+declare -A statsprocessor
+statsprocessor["name"]="statsprocessor"
+statsprocessor["namespace"]="statsprocessor"
+statsprocessor["appName"]="StatsProcessor"
+statsprocessor["port"]="80"
+statsprocessor["nodePoolName"]="input"
 
-# InputProcessor
+## Build & Push
+
+# Input Processor
 echo -e "\n--- Input Processor ---\n"
 docker build \
-    --tag "${DOCKERHUB_NAME}/${inputprocessor[name]}" \
-    ../../apps/InputProcessor/InputProcessor/.
+  --tag "${DOCKERHUB_NAME}/${inputprocessor[name]}" \
+  "../../apps/${inputprocessor[appName]}/${inputprocessor[appName]}/."
 docker push "${DOCKERHUB_NAME}/${inputprocessor[name]}"
 echo -e "\n------\n"
 
-### Helm
+# Stats Processor
+echo -e "\n--- Stats Processor ---\n"
+docker build \
+  --build-arg newRelicAppName=${statsprocessor[appName]} \
+  --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+  --tag "${DOCKERHUB_NAME}/${statsprocessor[name]}" \
+    "../../apps/${statsprocessor[appName]}/${statsprocessor[appName]}/."
+docker push "${DOCKERHUB_NAME}/${statsprocessor[name]}"
+echo -e "\n------\n"
+
+## Helm
 
 # Newrelic
 echo "Deploying Newrelic ..."
@@ -203,28 +222,23 @@ helm upgrade ${inputprocessor[name]} \
   --set influxdbPort=${influxdb[port]} \
   --set influxdbOrganization=${influxdb[org]} \
   --set influxdbBucket=${influxdb[bucket]} \
-  ../charts/InputProcessor
+  ../charts/${inputprocessor[appName]}
 
 echo -e " -> Input Processor is successfully deployed.\n"
 
-# # Stats Processor
-# echo "Deploying Stats Processor ..."
+# Stats Processor
+echo "Deploying Stats Processor..." 
 
-# # dotnet build \
-# #   ../../apps/StatsProcessor/StatsProcessor/ \
-# #   -o StatsProcessor.dll
+helm upgrade ${statsprocessor[name]} \
+  --install \
+  --wait \
+  --debug \
+  --create-namespace \
+  --namespace ${statsprocessor[namespace]} \
+  --set name=${statsprocessor[name]} \
+  --set nodePoolName=${statsprocessor[nodePoolName]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set port=${statsprocessor[port]} \
+  ../charts/${statsprocessor[appName]}
 
-# # zip -r StatsProcessor.zip \
-# #   ../../apps/StatsProcessor/StatsProcessor/ \
-# #   -x \
-# #   "../../apps/StatsProcessor/StatsProcessor/bin/*" \
-# #   "../../apps/StatsProcessor/StatsProcessor/obj/*" \
-# #   "../../apps/StatsProcessor/StatsProcessor/.gitignore" \
-# #   "../../apps/StatsProcessor/StatsProcessor/local.settings.json"
-
-# az functionapp deployment source config-zip \
-#   --resource-group $resourceGroupName \
-#   --name $statsFunctionAppName \
-#   --src "StatsProcessor.zip"
-
-# echo -e " -> Stats Processor is successfully deployed.\n"
+echo -e " -> Stats Processor is successfully deployed.\n"

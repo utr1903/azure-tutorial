@@ -1,5 +1,5 @@
-name: inputprocessor
-namespace: inputprocessor
+name: statsprocessor
+namespace: statsprocessor
 port: 80
 
 hpa:
