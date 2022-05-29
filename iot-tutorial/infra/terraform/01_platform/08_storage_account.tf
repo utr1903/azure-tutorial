@@ -9,3 +9,10 @@ resource "azurerm_storage_account" "iot" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
+
+# Blob Container - Stats Processor
+resource "azurerm_storage_container" "stats_processor" {
+  name                  = "statsprocessor"
+  storage_account_name  = azurerm_storage_account.iot.name
+  container_access_type = "private"
+}

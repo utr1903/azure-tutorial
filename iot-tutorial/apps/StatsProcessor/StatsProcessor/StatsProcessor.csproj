@@ -9,12 +9,25 @@
     <None Remove="Controllers\" />
     <None Remove="Commons\" />
     <None Remove="NewRelic.Agent" />
+    <None Remove="Azure.Messaging.EventHubs" />
+    <None Remove="EventHub\" />
+    <None Remove="Microsoft.Azure.ServiceBus.EventProcessorHost" />
+    <None Remove="Azure.Messaging.EventHubs.Processor" />
+    <None Remove="NewRelic.Agent.Api" />
+    <None Remove="Newtonsoft.Json" />
+    <None Remove="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Commons\" />
+    <Folder Include="EventHub\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NewRelic.Agent" Version="9.8.1" />
+    <PackageReference Include="Azure.Messaging.EventHubs" Version="5.7.0" />
+    <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.7.0" />
+    <PackageReference Include="NewRelic.Agent.Api" Version="9.8.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>

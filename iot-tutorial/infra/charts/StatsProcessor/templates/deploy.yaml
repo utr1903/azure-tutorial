@@ -16,24 +16,14 @@ spec:
         - name: {{ .Values.name }}
           image: "{{ .Values.dockerhubName }}/{{ .Values.name }}"
           env:
-            - name: SERVICE_BUS_CONNECTION_STRING
-              value: {{ .Values.serviceBusConnectionString }}
-            - name: SERVICE_BUS_QUEUE_NAME
-              value: {{ .Values.serviceBusQueueName }}
+            - name: STORAGE_ACCOUNT_CONNECTION_STRING
+              value: {{ .Values.storageAccountConnectionString }}
+            - name: BLOB_CONTAINER_NAME
+              value: {{ .Values.blobContainerName }}
             - name: EVENT_HUB_CONNECTION_STRING
               value: {{ .Values.eventHubConnectionString }}
             - name: EVENT_HUB_NAME
               value: {{ .Values.eventHubName }}
-            - name: INFLUXDB_SERVICE_NAME
-              value: {{ .Values.influxdbServiceName }}
-            - name: INFLUXDB_NAMESPACE
-              value: {{ .Values.influxdbNamespace }}
-            - name: INFLUXDB_PORT
-              value: "{{ .Values.influxdbPort }}"
-            - name: INFLUXDB_ORGANIZATION_NAME
-              value: {{ .Values.influxdbOrganization }}
-            - name: INFLUXDB_BUCKET_NAME
-              value: {{ .Values.influxdbBucket }}
           resources:
             requests:
               cpu: 200m

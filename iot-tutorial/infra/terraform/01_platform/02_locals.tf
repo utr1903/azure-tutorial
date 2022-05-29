@@ -30,8 +30,4 @@ locals {
   # Kubernetes Cluster
   project_kubernetes_cluster_name = "aks${var.project}${var.location_short}${var.platform}${var.stage_short}${var.instance}"
   project_kubernetes_cluster_nodepool_name = "rgaksnp${var.project}${var.location_short}${var.platform}${var.stage_short}${var.instance}"
-
-  # Function App - Stats
-  project_function_app_stats_name = "func${var.project}${var.location_short}${var.stats}${var.stage_short}${var.instance}"
-  project_function_app_stats_plan_name = "plan${var.project}${var.location_short}${var.stats}${var.stage_short}${var.instance}"
 }

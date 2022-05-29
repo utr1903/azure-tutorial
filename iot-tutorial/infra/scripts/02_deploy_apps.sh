@@ -20,6 +20,9 @@ stats="stats"
 # Azure
 resourceGroupName="rg${project}${locationShort}${platform}${stageShort}${instance}"
 
+storageAccountName="st${project}${locationShort}${stats}${stageShort}${instance}"
+statsBlobContainerName="statsprocessor"
+
 serviceBusNamespaceName="sb${project}${locationShort}${platform}${stageShort}${instance}"
 serviceBusQueueName="input"
 
@@ -27,8 +30,6 @@ eventHubNamespaceName="ehn${project}${locationShort}${platform}${stageShort}${in
 eventHubName="eh${project}${locationShort}${platform}${stageShort}${instance}"
 
 aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
-
-statsFunctionAppName="func${project}${locationShort}${stats}${stageShort}${instance}"
 
 # Influx DB
 declare -A influxdb
@@ -82,9 +83,11 @@ docker build \
 docker push "${DOCKERHUB_NAME}/${statsprocessor[name]}"
 echo -e "\n------\n"
 
-## Helm
+#######################
+### Helm Deployment ###
+#######################
 
-# Newrelic
+### Newrelic ###
 echo "Deploying Newrelic ..."
 
 kubectl apply -f https://download.newrelic.com/install/kubernetes/pixie/latest/px.dev_viziers.yaml && \
@@ -107,8 +110,10 @@ kubectl create namespace newrelic ; helm upgrade --install newrelic-bundle newre
     --set pixie-chart.enabled=true \
     --set pixie-chart.deployKey=$PIXIE_DEPLOY_KEY \
     --set pixie-chart.clusterName=$aksName
+#########
 
-# Ingress Controller
+### Ingress Controller ###
+
 echo "Deploying Ingress Controller ..."
 
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
@@ -133,8 +138,9 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --set defaultBackend.image.digest=""
 
 echo -e " -> Ingress Controller is successfully deployed.\n"
+#########
 
-# Influx DB
+### Influx DB ###
 echo "Deploying Influx DB ..."
 
 helm upgrade ${influxdb[name]} \
@@ -164,8 +170,9 @@ kubectl exec "${influxdb[name]}-0" \
   --force
 
 echo -e " -> Admin is successfully created.\n"
+#########
 
-# Grafana
+### Grafana ###
 echo "Deploying Grafana ..."
 
 # influxDbTokenForGrafana=$(kubectl exec "${influxdb[name]}-0" \
@@ -187,10 +194,9 @@ helm upgrade ${grafana[name]} \
   ../charts/grafana
 
 echo -e " -> Grafana is successfully deployed.\n"
+#########
 
-# Input Processor
-echo "Deploying Input Processor ..."
-
+### Preprocessing ###
 serviceBusConnectionString=$(az servicebus namespace authorization-rule keys list \
   --resource-group $resourceGroupName \
   --namespace-name $serviceBusNamespaceName \
@@ -202,6 +208,15 @@ eventHubConnectionString=$(az eventhubs namespace authorization-rule keys list \
   --namespace-name $eventHubNamespaceName \
   --name "RootManageSharedAccessKey" \
   | jq .primaryConnectionString)
+
+storageAccountConnectionString=$(az storage account show-connection-string \
+  --resource-group $resourceGroupName \
+  --name $storageAccountName \
+  | jq .primaryConnectionString)
+#########
+
+### Input Processor ###
+echo "Deploying Input Processor ..."
 
 helm upgrade ${inputprocessor[name]} \
   --install \
@@ -226,7 +241,7 @@ helm upgrade ${inputprocessor[name]} \
 
 echo -e " -> Input Processor is successfully deployed.\n"
 
-# Stats Processor
+### Stats Processor ###
 echo "Deploying Stats Processor..." 
 
 helm upgrade ${statsprocessor[name]} \
@@ -239,6 +254,11 @@ helm upgrade ${statsprocessor[name]} \
   --set nodePoolName=${statsprocessor[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
   --set port=${statsprocessor[port]} \
+  --set storageAccountConnectionString=$storageAccountConnectionString \
+  --set blobContainerName=$statsBlobContainerName \
+  --set eventHubConnectionString=$eventHubConnectionString \
+  --set eventHubName=$eventHubName \
   ../charts/${statsprocessor[appName]}
 
 echo -e " -> Stats Processor is successfully deployed.\n"
+#########

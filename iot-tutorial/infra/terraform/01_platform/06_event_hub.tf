@@ -39,17 +39,17 @@ resource "azurerm_eventhub_authorization_rule" "tsi" {
   manage = false
 }
 
-# Event Hub Consumer Group - Stats Function
-resource "azurerm_eventhub_consumer_group" "stats_function" {
-  name                = local.project_function_app_stats_name
+# Event Hub Consumer Group - Stats Processor
+resource "azurerm_eventhub_consumer_group" "stats_processor" {
+  name                = "statsprocessor"
   resource_group_name = azurerm_resource_group.iot.name
   namespace_name      = azurerm_eventhub_namespace.iot.name
   eventhub_name       = azurerm_eventhub.iot.name
 }
 
-# Event Hub Auth Rule - Stats Function
-resource "azurerm_eventhub_authorization_rule" "stats_function" {
-  name                = local.project_function_app_stats_name
+# Event Hub Auth Rule - Stats Processor
+resource "azurerm_eventhub_authorization_rule" "stats_processor" {
+  name                = "statsprocessor"
   namespace_name      = azurerm_eventhub_namespace.iot.name
   eventhub_name       = azurerm_eventhub.iot.name
   resource_group_name = azurerm_resource_group.iot.name
