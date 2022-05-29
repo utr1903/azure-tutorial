@@ -93,9 +93,11 @@ namespace StatsProcessor.EventHub
             try
             {
                 Task processingTask = Task.Run(() => {
+
                     // Parse event body.
                     var deviceMessage = ParseMessage(eventArgs.Data);
 
+                    // Send message to New Relic.
                     SendMessageToNewrelic(deviceMessage);
                 });
 
