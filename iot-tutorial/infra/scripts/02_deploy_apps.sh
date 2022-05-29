@@ -47,20 +47,20 @@ grafana["port"]="3000"
 grafana["nodePoolName"]="timeseries"
 
 # Input Processor
-declare -A iproc
-iproc["name"]="iproc"
-iproc["namespace"]="iproc"
-iproc["port"]="80"
-iproc["nodePoolName"]="input"
+declare -A inputprocessor
+inputprocessor["name"]="inputprocessor"
+inputprocessor["namespace"]="inputprocessor"
+inputprocessor["port"]="80"
+inputprocessor["nodePoolName"]="input"
 
 ### Build & Push
 
 # InputProcessor
 echo -e "\n--- Input Processor ---\n"
 docker build \
-    --tag "${DOCKERHUB_NAME}/${iproc[name]}" \
+    --tag "${DOCKERHUB_NAME}/${inputprocessor[name]}" \
     ../../apps/InputProcessor/InputProcessor/.
-docker push "${DOCKERHUB_NAME}/${iproc[name]}"
+docker push "${DOCKERHUB_NAME}/${inputprocessor[name]}"
 echo -e "\n------\n"
 
 ### Helm
@@ -184,16 +184,16 @@ eventHubConnectionString=$(az eventhubs namespace authorization-rule keys list \
   --name "RootManageSharedAccessKey" \
   | jq .primaryConnectionString)
 
-helm upgrade ${iproc[name]} \
+helm upgrade ${inputprocessor[name]} \
   --install \
   --wait \
   --debug \
   --create-namespace \
-  --namespace ${iproc[namespace]} \
-  --set name=${iproc[name]} \
-  --set nodePoolName=${iproc[nodePoolName]} \
+  --namespace ${inputprocessor[namespace]} \
+  --set name=${inputprocessor[name]} \
+  --set nodePoolName=${inputprocessor[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
-  --set port=${iproc[port]} \
+  --set port=${inputprocessor[port]} \
   --set serviceBusConnectionString=$serviceBusConnectionString \
   --set serviceBusQueueName=$serviceBusQueueName \
   --set eventHubConnectionString=$eventHubConnectionString \
