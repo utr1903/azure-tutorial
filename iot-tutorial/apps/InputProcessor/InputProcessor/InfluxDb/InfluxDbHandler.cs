@@ -90,7 +90,7 @@ namespace InputProcessor.InfluxDb
                     record += ",";
             }
 
-            record += $" value={deviceMessage.Value}";
+            record += $" value={deviceMessage.DeviceValue}";
 
             await _writeApi.WriteRecordAsync(record, WritePrecision.Ns,
                 org: INFLUXDB_ORGANIZATION_NAME,
@@ -158,7 +158,7 @@ namespace InputProcessor.InfluxDb
                 nameof(WriteMessage),
                 "Writing to Influx DB...",
                 deviceMessage.DeviceName,
-                deviceMessage.Value.ToString()
+                deviceMessage.DeviceValue.ToString()
             );
         }
 
@@ -178,7 +178,7 @@ namespace InputProcessor.InfluxDb
                 nameof(WriteMessage),
                 "Message is successfully written into Influx DB.",
                 deviceMessage.DeviceName,
-                deviceMessage.Value.ToString()
+                deviceMessage.DeviceValue.ToString()
             );
         }
     }

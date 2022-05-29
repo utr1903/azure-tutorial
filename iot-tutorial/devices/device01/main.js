@@ -33,7 +33,7 @@ function generateMessage () {
     const data = JSON.stringify({
         deviceId: deviceId,
         deviceName: deviceId,
-        value: temperature,
+        deviceValue: temperature,
         tags: {
             sensorType: "temperature",
             sensorUnit: "Celcius",

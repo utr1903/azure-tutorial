@@ -9,14 +9,14 @@ namespace InputProcessor.Models
         [JsonProperty("deviceId")]
         public string DeviceId { get; set; }
 
-        [JsonProperty("DeviceName")]
+        [JsonProperty("deviceName")]
         public string DeviceName { get; set; }
 
         //[JsonProperty("timestamp")]
         //public long Timestamp { get; set; }
 
-        [JsonProperty("value")]
-        public double Value { get; set; }
+        [JsonProperty("deviceValue")]
+        public double DeviceValue { get; set; }
 
         [JsonProperty("tags")]
         public Dictionary<string, string> Tags { get; set; } 

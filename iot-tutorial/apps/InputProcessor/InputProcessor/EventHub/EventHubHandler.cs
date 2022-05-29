@@ -30,11 +30,11 @@ namespace InputProcessor.EventHub
         {
             LogCreatingEventHubProducerClient();
 
-            var eventHubNamespaceName = Environment.GetEnvironmentVariable(EVENT_HUB_CONNECTION_STRING);
+            var eventHubConnectionString = Environment.GetEnvironmentVariable(EVENT_HUB_CONNECTION_STRING);
             var eventHubName = Environment.GetEnvironmentVariable(EVENT_HUB_NAME);
 
             // Create Event Hub connection.
-            _eventHubProducerClient = new EventHubProducerClient(eventHubNamespaceName, eventHubName);
+            _eventHubProducerClient = new EventHubProducerClient(eventHubConnectionString, eventHubName);
 
             LogEventHubProducerClientCreated();
         }
@@ -110,7 +110,7 @@ namespace InputProcessor.EventHub
                 nameof(SendMessage),
                 "Message is successfully added to batch.",
                 deviceMessage.DeviceName,
-                deviceMessage.Value.ToString()
+                deviceMessage.DeviceValue.ToString()
             );
         }
 
@@ -131,7 +131,7 @@ namespace InputProcessor.EventHub
                 nameof(SendMessage),
                 "Message is failed to be added to batch.",
                 deviceMessage.DeviceName,
-                deviceMessage.Value.ToString()
+                deviceMessage.DeviceValue.ToString()
             );
         }
     }

@@ -44,44 +44,6 @@ namespace InputProcessor.ServiceBus
         }
 
         /// <summary>
-        ///     Starts to process Service Bus Queue messages
-        ///     and send them to Event Hub.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>
-        ///     Task.
-        /// </returns>
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                LogStartingServiceBusProcessor();
-
-                await _processor.StartProcessingAsync();
-            }
-            catch (Exception e)
-            {
-                LogUnexpectedErrorOccured(e);
-
-                await _processor.DisposeAsync();
-                await _client.DisposeAsync();
-            }
-        }
-
-        /// <summary>
-        ///     Stops processing Service Bus Queue messages gracefully.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>
-        ///     Task.
-        /// </returns>
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await _processor.DisposeAsync();
-            await _client.DisposeAsync();
-        }
-
-        /// <summary>
         ///     Creates Event Hub producer client.
         /// </summary>
         private void CreateEventhHubProducer()
@@ -131,6 +93,44 @@ namespace InputProcessor.ServiceBus
             _processor.ProcessErrorAsync += ErrorHandler;
 
             LogServiceBusProcessorCreated();
+        }
+
+        /// <summary>
+        ///     Starts to process Service Bus Queue messages
+        ///     and send them to Event Hub.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>
+        ///     Task.
+        /// </returns>
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                LogStartingServiceBusProcessor();
+
+                await _processor.StartProcessingAsync();
+            }
+            catch (Exception e)
+            {
+                LogUnexpectedErrorOccured(e);
+
+                await _processor.DisposeAsync();
+                await _client.DisposeAsync();
+            }
+        }
+
+        /// <summary>
+        ///     Stops processing Service Bus Queue messages gracefully.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>
+        ///     Task.
+        /// </returns>
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await _processor.DisposeAsync();
+            await _client.DisposeAsync();
         }
 
         /// <summary>
