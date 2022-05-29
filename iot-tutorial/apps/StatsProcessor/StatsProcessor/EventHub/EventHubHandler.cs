@@ -178,12 +178,16 @@ namespace StatsProcessor.EventHub
         /// <param name="deviceMessage"></param>
         private void SendMessageToNewrelic(DeviceMessage deviceMessage)
         {
+            LogSendingMessageToNewrelic();
+
             var agent = NewRelic.Api.Agent.NewRelic.GetAgent();
             var transaction = agent.CurrentTransaction;
 
             transaction
                 .AddCustomAttribute("deviceName", deviceMessage.DeviceName)
                 .AddCustomAttribute("deviceValue", deviceMessage.DeviceValue);
+
+            LogMessageToNewrelicSent();
         }
 
         /// <summary>
@@ -226,7 +230,7 @@ namespace StatsProcessor.EventHub
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(ParseMessage),
-                "Parsing Service Bus message..."
+                "Parsing Event Hub message..."
             );
         }
 
@@ -240,7 +244,32 @@ namespace StatsProcessor.EventHub
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(ParseMessage),
-                "Service Bus message parsed..."
+                "Event Hub message parsed."
+            );
+        }
+
+        private void LogSendingMessageToNewrelic()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(EventHubHandler),
+                nameof(ParseMessage),
+                "Sending message to New Relic..."
+            );
+        }
+
+        /// <summary>
+        ///     Log message sent to New Relic.
+        /// </summary>
+        private void LogMessageToNewrelicSent()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(EventHubHandler),
+                nameof(ParseMessage),
+                "Message is sent to New Relic successfully."
             );
         }
 

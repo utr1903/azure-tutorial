@@ -20,7 +20,7 @@ stats="stats"
 # Azure
 resourceGroupName="rg${project}${locationShort}${platform}${stageShort}${instance}"
 
-storageAccountName="st${project}${locationShort}${stats}${stageShort}${instance}"
+storageAccountName="st${project}${locationShort}${platform}${stageShort}${instance}"
 statsBlobContainerName="statsprocessor"
 
 serviceBusNamespaceName="sb${project}${locationShort}${platform}${stageShort}${instance}"
@@ -212,7 +212,7 @@ eventHubConnectionString=$(az eventhubs namespace authorization-rule keys list \
 storageAccountConnectionString=$(az storage account show-connection-string \
   --resource-group $resourceGroupName \
   --name $storageAccountName \
-  | jq .primaryConnectionString)
+  | jq .connectionString)
 #########
 
 ### Input Processor ###
