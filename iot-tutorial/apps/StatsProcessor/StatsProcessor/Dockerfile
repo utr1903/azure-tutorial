@@ -22,11 +22,11 @@ RUN apt-get update && apt-get install -y wget ca-certificates gnupg \
 ARG newRelicAppName
 ARG newRelicLicenseKey
 
-ENV CORECLR_ENABLE_PROFILING=1 \
-CORECLR_PROFILER={36032161-FFC0-4B61-B559-F6C5D41BAE5A} \
-CORECLR_NEWRELIC_HOME=/usr/local/newrelic-netcore20-agent \
-CORECLR_PROFILER_PATH=/usr/local/newrelic-netcore20-agent/libNewRelicProfiler.so \
-ENV NEW_RELIC_APP_NAME=$newRelicAppName \
+ENV CORECLR_ENABLE_PROFILING=1
+ENV CORECLR_PROFILER={36032161-FFC0-4B61-B559-F6C5D41BAE5A}
+ENV CORECLR_NEWRELIC_HOME=/usr/local/newrelic-netcore20-agent
+ENV CORECLR_PROFILER_PATH=/usr/local/newrelic-netcore20-agent/libNewRelicProfiler.so
+ENV NEW_RELIC_APP_NAME=$newRelicAppName
 ENV NEW_RELIC_LICENSE_KEY=$newRelicLicenseKey
 
 # Build runtime image
@@ -34,4 +34,4 @@ FROM mcr.microsoft.com/dotnet/aspnet:3.1
 WORKDIR /app
 EXPOSE 80
 COPY --from=build-env /app/out .
-ENTRYPOINT ["dotnet", "${newRelicAppName}.dll"]
+ENTRYPOINT ["dotnet", "StatsProcessor.dll"]
