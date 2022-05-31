@@ -40,6 +40,7 @@ diagnosticsEventHubConsumerGroupName="diagnostics"
 
 projectStorageAccountName="st${project}${locationShort}${platform}${stageShort}${instance}"
 projectBlobContainerNameStats="statsprocessor"
+projectBlobContainerNameDiags="diagsprocessor"
 
 projectTimeseriesInsightsName="tsi${project}${locationShort}${platform}${stageShort}${instance}"
 
@@ -139,6 +140,7 @@ terraform -chdir=../terraform/01_platform plan \
   -var project_iot_hub_name=$projectIotHubName \
   -var project_storage_account_name=$projectStorageAccountName \
   -var project_blob_container_name_stats=$projectBlobContainerNameStats \
+  -var project_blob_container_name_diags=$projectBlobContainerNameDiags \
   -var project_timeseries_insight_name=$projectTimeseriesInsightsName \
   -var project_kubernetes_cluster_name=$projectAksName \
   -var project_kubernetes_cluster_nodepool_name=$projectAksNodepoolName \

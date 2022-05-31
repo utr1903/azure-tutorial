@@ -89,8 +89,8 @@ namespace DiagnosticsProcessor.EventHub
 
             var eventHubConnectionString = Environment.GetEnvironmentVariable("EVENT_HUB_CONNECTION_STRING");
             var eventHubName = Environment.GetEnvironmentVariable("EVENT_HUB_NAME");
-            var eventHubConsumerGroup = "statsprocessor";
-
+            var eventHubConsumerGroup = Environment.GetEnvironmentVariable("EVENT_HUB_CONSUMER_GROUP_NAME");
+            
             var blobStorageClient = new BlobContainerClient(storageConnectionString, blobContainerName);
 
             _processor = new EventProcessorClient(blobStorageClient, eventHubConsumerGroup,

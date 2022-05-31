@@ -16,12 +16,6 @@ namespace StatsProcessor.EventHub
     {
         private readonly ILogger _logger;
 
-        private const string STORAGE_ACCOUNT_CONNECTION_STRING = "STORAGE_ACCOUNT_CONNECTION_STRING";
-        private const string BLOB_CONTAINER_NAME = "BLOB_CONTAINER_NAME";
-
-        private const string EVENT_HUB_CONNECTION_STRING = "EVENT_HUB_CONNECTION_STRING";
-        private const string EVENT_HUB_NAME = "EVENT_HUB_NAME";
-
         private EventProcessorClient _processor;
 
         public EventHubHandler(ILogger<EventHubHandler> logger)
@@ -63,12 +57,12 @@ namespace StatsProcessor.EventHub
         {
             LogCreatingEventHubProcessorClient();
 
-            var storageConnectionString = Environment.GetEnvironmentVariable(STORAGE_ACCOUNT_CONNECTION_STRING);
-            var blobContainerName = Environment.GetEnvironmentVariable(BLOB_CONTAINER_NAME);
+            var storageConnectionString = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_CONNECTION_STRING");
+            var blobContainerName = Environment.GetEnvironmentVariable("BLOB_CONTAINER_NAME");
 
-            var eventHubConnectionString = Environment.GetEnvironmentVariable(EVENT_HUB_CONNECTION_STRING);
-            var eventHubName = Environment.GetEnvironmentVariable(EVENT_HUB_NAME);
-            var eventHubConsumerGroup = "statsprocessor";
+            var eventHubConnectionString = Environment.GetEnvironmentVariable("EVENT_HUB_CONNECTION_STRING");
+            var eventHubName = Environment.GetEnvironmentVariable("EVENT_HUB_NAME");
+            var eventHubConsumerGroup = Environment.GetEnvironmentVariable("EVENT_HUB_CONSUMER_GROUP_NAME");
 
             var blobStorageClient = new BlobContainerClient(storageConnectionString, blobContainerName);
 

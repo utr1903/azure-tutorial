@@ -26,6 +26,8 @@ spec:
               value: {{ .Values.eventHubConnectionString }}
             - name: EVENT_HUB_NAME
               value: {{ .Values.eventHubName }}
+            - name: EVENT_HUB_CONSUMER_GROUP_NAME
+              value: {{ .Values.eventHubConsumerGroupName }}
           resources:
             requests:
               cpu: 200m
