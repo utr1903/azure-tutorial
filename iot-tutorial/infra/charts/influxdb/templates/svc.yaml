@@ -4,10 +4,12 @@ metadata:
   name: {{ .Values.name }}
   labels:
     app: {{ .Values.name }}
+    nodePoolName: {{ .Values.nodePoolName }}
 spec:
   clusterIP: None
   selector:
     app: {{ .Values.name }}
+    nodePoolName: {{ .Values.nodePoolName }}
   ports:
   - name: api
     port: {{ .Values.ports.http }}

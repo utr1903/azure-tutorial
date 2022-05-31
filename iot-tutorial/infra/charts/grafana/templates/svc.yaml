@@ -5,10 +5,12 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: {{ .Values.name }}
+    nodePoolName: {{ .Values.nodePoolName }}
 spec:
   type: ClusterIP
   selector:
     app: {{ .Values.name }}
+    nodePoolName: {{ .Values.nodePoolName }}
   ports:
     - port: {{ .Values.port }}
       targetPort: {{ .Values.port }}

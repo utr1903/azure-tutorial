@@ -5,15 +5,18 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: {{ .Values.name }}
+    nodePoolName: {{ .Values.nodePoolName }}
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: {{ .Values.name }}
+      nodePoolName: {{ .Values.nodePoolName }}
   template:
     metadata:
       labels:
         app: {{ .Values.name }}
+        nodePoolName: {{ .Values.nodePoolName }}
     spec:
       containers:
         - name: {{ .Values.name }}

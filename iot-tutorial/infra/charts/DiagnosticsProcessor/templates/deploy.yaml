@@ -3,14 +3,19 @@ kind: Deployment
 metadata:
   name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+    nodePoolName: {{ .Values.nodePoolName }}
 spec:
   selector:
     matchLabels:
       app: {{ .Values.name }}
+      nodePoolName: {{ .Values.nodePoolName }}
   template:
     metadata:
       labels:
         app: {{ .Values.name }}
+        nodePoolName: {{ .Values.nodePoolName }}
     spec:
       containers:
         - name: {{ .Values.name }}
