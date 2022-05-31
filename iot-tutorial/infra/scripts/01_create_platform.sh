@@ -144,7 +144,7 @@ terraform -chdir=../terraform/01_platform plan \
   -var project_timeseries_insight_name=$projectTimeseriesInsightsName \
   -var project_kubernetes_cluster_name=$projectAksName \
   -var project_kubernetes_cluster_nodepool_name=$projectAksNodepoolName \
-  -var diagnostics_event_hub_name=$projectEventHubName \
+  -var diagnostics_event_hub_name=$diagnosticsEventHubName \
   -var diagnostics_event_hub_consumer_group_name=$diagnosticsEventHubConsumerGroupName \
   -out "./tfplan"
 

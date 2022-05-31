@@ -49,7 +49,7 @@ projectAksNodepoolName="rgaks${project}${locationShort}${platform}${stageShort}$
 
 ### Terraform destroy
 
-terraform -chdir=../terraform/01_platform plan \
+terraform -chdir=../terraform/01_platform destroy \
   -var project=$project \
   -var location_long=$locationLong \
   -var location_short=$locationShort \
@@ -70,8 +70,5 @@ terraform -chdir=../terraform/01_platform plan \
   -var project_timeseries_insight_name=$projectTimeseriesInsightsName \
   -var project_kubernetes_cluster_name=$projectAksName \
   -var project_kubernetes_cluster_nodepool_name=$projectAksNodepoolName \
-  -var diagnostics_event_hub_name=$projectEventHubName \
-  -var diagnostics_event_hub_consumer_group_name=$diagnosticsEventHubConsumerGroupName \
-  -out "./tfplan"
-
-terraform -chdir=../terraform/01_platform apply --destroy tfplan
+  -var diagnostics_event_hub_name=$diagnosticsEventHubName \
+  -var diagnostics_event_hub_consumer_group_name=$diagnosticsEventHubConsumerGroupName

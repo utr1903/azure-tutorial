@@ -13,23 +13,30 @@ stageShort="d"
 instance="003"
 
 platform="platform"
-stats="stats"
+diagnostics="diagnostics"
 
 ### Set variables
 
 # Azure
-resourceGroupName="rg${project}${locationShort}${platform}${stageShort}${instance}"
+projectResourceGroupName="rg${project}${locationShort}${platform}${stageShort}${instance}"
 
-storageAccountName="st${project}${locationShort}${platform}${stageShort}${instance}"
-statsBlobContainerName="statsprocessor"
+projectIotHubName="iot${project}${locationShort}${platform}${stageShort}${instance}"
 
-serviceBusNamespaceName="sb${project}${locationShort}${platform}${stageShort}${instance}"
-serviceBusQueueName="input"
+projectServiceBusNamespaceName="sb${project}${locationShort}${platform}${stageShort}${instance}"
+projectServiceBusQueueNameInput="${projectIotHubName}input"
 
-eventHubNamespaceName="ehn${project}${locationShort}${platform}${stageShort}${instance}"
-eventHubName="eh${project}${locationShort}${platform}${stageShort}${instance}"
+projectEventHubNamespaceName="ehn${project}${locationShort}${platform}${stageShort}${instance}"
+projectEventHubName="eh${project}${locationShort}${platform}${stageShort}${instance}"
+projectEventHubConsumerGroupName="statsprocessor"
 
-aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
+diagnosticsEventHubName="eh${project}${locationShort}${diagnostics}${stageShort}${instance}"
+diagnosticsEventHubConsumerGroupName="diagnostics"
+
+projectStorageAccountName="st${project}${locationShort}${platform}${stageShort}${instance}"
+projectBlobContainerNameStats="statsprocessor"
+projectBlobContainerNameDiags="diagsprocessor"
+
+projectAksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
 
 # Influx DB
 declare -A influxdb
@@ -63,11 +70,21 @@ statsprocessor["appName"]="StatsProcessor"
 statsprocessor["port"]="80"
 statsprocessor["nodePoolName"]="input"
 
+# Diagnostics Processor
+declare -A diagsprocessor
+diagsprocessor["name"]="diagsprocessor"
+diagsprocessor["namespace"]="diagsprocessor"
+diagsprocessor["appName"]="DiagnosticsProcessor"
+diagsprocessor["port"]="80"
+diagsprocessor["nodePoolName"]="input"
+
 ## Build & Push
 
 # Input Processor
 echo -e "\n--- Input Processor ---\n"
 docker build \
+  --build-arg newRelicAppName=${inputprocessor[appName]} \
+  --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
   --tag "${DOCKERHUB_NAME}/${inputprocessor[name]}" \
   "../../apps/${inputprocessor[appName]}/${inputprocessor[appName]}/."
 docker push "${DOCKERHUB_NAME}/${inputprocessor[name]}"
@@ -81,6 +98,16 @@ docker build \
   --tag "${DOCKERHUB_NAME}/${statsprocessor[name]}" \
     "../../apps/${statsprocessor[appName]}/${statsprocessor[appName]}/."
 docker push "${DOCKERHUB_NAME}/${statsprocessor[name]}"
+echo -e "\n------\n"
+
+# Diagnostics Processor
+echo -e "\n--- Diagnostics Processor ---\n"
+docker build \
+  --build-arg newRelicAppName=${diagsprocessor[appName]} \
+  --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+  --tag "${DOCKERHUB_NAME}/${diagsprocessor[name]}" \
+  "../../apps/${diagsprocessor[appName]}/${diagsprocessor[appName]}/."
+docker push "${DOCKERHUB_NAME}/${diagsprocessor[name]}"
 echo -e "\n------\n"
 
 #######################
@@ -97,7 +124,7 @@ kubectl create namespace newrelic ; helm upgrade --install newrelic-bundle newre
     --wait \
     --debug \
     --set global.licenseKey=$NEWRELIC_LICENSE_KEY \
-    --set global.cluster=$aksName \
+    --set global.cluster=$projectAksName \
     --namespace=newrelic \
     --set newrelic-infrastructure.privileged=true \
     --set global.lowDataMode=true \
@@ -109,7 +136,7 @@ kubectl create namespace newrelic ; helm upgrade --install newrelic-bundle newre
     --set newrelic-pixie.apiKey=$PIXIE_API_KEY \
     --set pixie-chart.enabled=true \
     --set pixie-chart.deployKey=$PIXIE_DEPLOY_KEY \
-    --set pixie-chart.clusterName=$aksName
+    --set pixie-chart.clusterName=$projectAksName
 #########
 
 ### Ingress Controller ###
@@ -197,21 +224,21 @@ echo -e " -> Grafana is successfully deployed.\n"
 #########
 
 ### Preprocessing ###
-serviceBusConnectionString=$(az servicebus namespace authorization-rule keys list \
-  --resource-group $resourceGroupName \
-  --namespace-name $serviceBusNamespaceName \
+serviceBusNamespaceConnectionString=$(az servicebus namespace authorization-rule keys list \
+  --resource-group $projectResourceGroupName \
+  --namespace-name $projectServiceBusNamespaceName \
   --name "RootManageSharedAccessKey" \
   | jq .primaryConnectionString)
 
-eventHubConnectionString=$(az eventhubs namespace authorization-rule keys list \
-  --resource-group $resourceGroupName \
-  --namespace-name $eventHubNamespaceName \
+eventHubNamespaceConnectionString=$(az eventhubs namespace authorization-rule keys list \
+  --resource-group $projectResourceGroupName \
+  --namespace-name $projectEventHubNamespaceName \
   --name "RootManageSharedAccessKey" \
   | jq .primaryConnectionString)
 
 storageAccountConnectionString=$(az storage account show-connection-string \
-  --resource-group $resourceGroupName \
-  --name $storageAccountName \
+  --resource-group $projectResourceGroupName \
+  --name $projectStorageAccountName \
   | jq .connectionString)
 #########
 
@@ -228,10 +255,10 @@ helm upgrade ${inputprocessor[name]} \
   --set nodePoolName=${inputprocessor[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
   --set port=${inputprocessor[port]} \
-  --set serviceBusConnectionString=$serviceBusConnectionString \
-  --set serviceBusQueueName=$serviceBusQueueName \
-  --set eventHubConnectionString=$eventHubConnectionString \
-  --set eventHubName=$eventHubName \
+  --set serviceBusConnectionString=$serviceBusNamespaceConnectionString \
+  --set serviceBusQueueName=$projectServiceBusQueueNameInput \
+  --set eventHubConnectionString=$eventHubNamespaceConnectionString \
+  --set eventHubName=$projectEventHubName \
   --set influxdbServiceName=${influxdb[name]} \
   --set influxdbNamespace=${influxdb[namespace]} \
   --set influxdbPort=${influxdb[port]} \
@@ -255,10 +282,34 @@ helm upgrade ${statsprocessor[name]} \
   --set dockerhubName=$DOCKERHUB_NAME \
   --set port=${statsprocessor[port]} \
   --set storageAccountConnectionString=$storageAccountConnectionString \
-  --set blobContainerName=$statsBlobContainerName \
-  --set eventHubConnectionString=$eventHubConnectionString \
-  --set eventHubName=$eventHubName \
+  --set blobContainerName=$projectBlobContainerNameStats \
+  --set eventHubConnectionString=$eventHubNamespaceConnectionString \
+  --set eventHubName=$projectEventHubName \
+  --set eventHubConsumerGroupName=$projectEventHubConsumerGroupName \
   ../charts/${statsprocessor[appName]}
 
 echo -e " -> Stats Processor is successfully deployed.\n"
+#########
+
+### Diagnostics Processor ###
+echo "Deploying Diagnostics Processor..." 
+
+helm upgrade ${diagsprocessor[name]} \
+  --install \
+  --wait \
+  --debug \
+  --create-namespace \
+  --namespace ${diagsprocessor[namespace]} \
+  --set name=${diagsprocessor[name]} \
+  --set nodePoolName=${diagsprocessor[nodePoolName]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set port=${diagsprocessor[port]} \
+  --set storageAccountConnectionString=$storageAccountConnectionString \
+  --set blobContainerName=$projectBlobContainerNameDiags \
+  --set eventHubConnectionString=$eventHubNamespaceConnectionString \
+  --set eventHubName=$diagnosticsEventHubName \
+  --set eventHubConsumerGroupName=$diagnosticsEventHubConsumerGroupName \
+  ../charts/${diagsprocessor[appName]}
+
+echo -e " -> Diagnostics Processor is successfully deployed.\n"
 #########
