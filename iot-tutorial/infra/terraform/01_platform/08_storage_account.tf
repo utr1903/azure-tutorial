@@ -16,3 +16,10 @@ resource "azurerm_storage_container" "stats_processor" {
   storage_account_name  = azurerm_storage_account.iot.name
   container_access_type = "private"
 }
+
+# Blob Container - Diagnostics Processor
+resource "azurerm_storage_container" "diags_processor" {
+  name                  = var.project_blob_container_name_diags
+  storage_account_name  = azurerm_storage_account.iot.name
+  container_access_type = "private"
+}

@@ -64,7 +64,9 @@ resource "azurerm_eventhub_authorization_rule" "stats_processor" {
 }
 ###########
 
-
+###################
+### Diagnostics ###
+###################
 
 # Event Hub
 resource "azurerm_eventhub" "diagnostics" {

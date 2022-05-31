@@ -113,6 +113,10 @@ variable "project_blob_container_name_stats" {
   type    = string
 }
 
+variable "project_blob_container_name_diags" {
+  type    = string
+}
+
 # Timeseries Insights
 variable "project_timeseries_insight_name" {
   type    = string
