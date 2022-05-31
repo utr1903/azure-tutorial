@@ -304,6 +304,7 @@ helm upgrade ${diagsprocessor[name]} \
   --set nodePoolName=${diagsprocessor[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
   --set port=${diagsprocessor[port]} \
+  --set newRelicLicenseKey=$newRelicLicenseKey \
   --set storageAccountConnectionString=$storageAccountConnectionString \
   --set blobContainerName=$projectBlobContainerNameDiags \
   --set eventHubConnectionString=$eventHubNamespaceConnectionString \
