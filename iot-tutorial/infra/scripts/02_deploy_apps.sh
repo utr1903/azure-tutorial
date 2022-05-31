@@ -76,7 +76,7 @@ diagsprocessor["name"]="diagsprocessor"
 diagsprocessor["namespace"]="diagsprocessor"
 diagsprocessor["appName"]="DiagnosticsProcessor"
 diagsprocessor["port"]="80"
-diagsprocessor["nodePoolName"]="input"
+diagsprocessor["nodePoolName"]="diagnostics"
 
 ## Build & Push
 
@@ -304,7 +304,7 @@ helm upgrade ${diagsprocessor[name]} \
   --set nodePoolName=${diagsprocessor[nodePoolName]} \
   --set dockerhubName=$DOCKERHUB_NAME \
   --set port=${diagsprocessor[port]} \
-  --set newRelicLicenseKey=$newRelicLicenseKey \
+  --set newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
   --set storageAccountConnectionString=$storageAccountConnectionString \
   --set blobContainerName=$projectBlobContainerNameDiags \
   --set eventHubConnectionString=$eventHubNamespaceConnectionString \

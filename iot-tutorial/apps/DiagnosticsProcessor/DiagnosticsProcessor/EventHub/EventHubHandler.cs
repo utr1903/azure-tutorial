@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
@@ -20,7 +21,6 @@ namespace DiagnosticsProcessor.EventHub
         private readonly ILogger _logger;
 
         private const string NEWRELIC_LOG_URI = "https://log-api.eu.newrelic.com/log/v1";
-        private string NEWRELIC_LICENSE_KEY;
 
         private HttpClient _httpClient;
         private EventProcessorClient _processor;
@@ -67,13 +67,15 @@ namespace DiagnosticsProcessor.EventHub
         {
             _httpClient = new HttpClient();
 
-            // Add an Accept header for JSON format.
-            _httpClient.DefaultRequestHeaders.Accept
-                .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //// Add content type as JSON.
+            //_httpClient.DefaultRequestHeaders
+            //    .Add("Content-Type", "application/json");
 
             // Add New Relic license key.
+            var newRelicLicenseKey = Environment.GetEnvironmentVariable("NEWRELIC_LICENSE_KEY");
+
             _httpClient.DefaultRequestHeaders
-                .Add("X-License-Key", NEWRELIC_LICENSE_KEY);
+                .Add("Api-Key", newRelicLicenseKey);
         }
 
         /// <summary>
@@ -83,7 +85,6 @@ namespace DiagnosticsProcessor.EventHub
         {
             LogCreatingEventHubProcessorClient();
 
-            NEWRELIC_LICENSE_KEY = Environment.GetEnvironmentVariable("NEWRELIC_LICENSE_KEY");
             var storageConnectionString = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_CONNECTION_STRING");
             var blobContainerName = Environment.GetEnvironmentVariable("BLOB_CONTAINER_NAME");
 
@@ -189,7 +190,7 @@ namespace DiagnosticsProcessor.EventHub
             {
                 JsonConvert.DeserializeObject<JObject>(log);
 
-                LogEventHubMessageParsed();
+                LogEventHubMessageParsed(log);
 
                 return log;
             }
@@ -207,13 +208,14 @@ namespace DiagnosticsProcessor.EventHub
         /// </param>
         private async Task SendLogToNewRelic(string log)
         {
-            var httpContent = new StringContent(log);
+            var httpContent = new StringContent(log, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(NEWRELIC_LOG_URI, httpContent);
 
             if (response.IsSuccessStatusCode)
             {
                 var responseMessage = await response.Content.ReadAsStringAsync();
-                LogMessageToNewRelicSent(responseMessage);
+                LogMessageToNewRelicSent((int)response.StatusCode,
+                    responseMessage);
             }
             else
             {
@@ -233,7 +235,7 @@ namespace DiagnosticsProcessor.EventHub
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(CreateProcessorClient),
-                "Creating Event Hub processor..."
+                "message:Creating Event Hub processor..."
             );
         }
 
@@ -248,7 +250,7 @@ namespace DiagnosticsProcessor.EventHub
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(CreateProcessorClient),
-                "Event Hub processor is created successfully."
+                "message:Event Hub processor is created successfully."
             );
         }
 
@@ -262,21 +264,25 @@ namespace DiagnosticsProcessor.EventHub
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(ParseMessage),
-                "Parsing Event Hub message..."
+                "message:Parsing Event Hub message..."
             );
         }
 
         /// <summary>
         ///     Log Event Hub message parsed.
         /// </summary>
-        private void LogEventHubMessageParsed()
+        /// <param name="log">
+        ///     Log message.
+        /// </param>
+        private void LogEventHubMessageParsed(string log)
         {
             CustomLogger.Log(
                 _logger,
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(ParseMessage),
-                "Event Hub message is parsed."
+                $"message:Event Hub message is parsed," +
+                $"parsedLog:{log}"
             );
         }
 
@@ -293,7 +299,8 @@ namespace DiagnosticsProcessor.EventHub
                 LogLevel.Error,
                 nameof(EventHubHandler),
                 nameof(ParseMessage),
-                $"Event Hub log is not parsed: {log}"
+                $"message:Event Hub log is not parsed," +
+                $"notParsedLog:{log}"
             );
         }
 
@@ -307,24 +314,29 @@ namespace DiagnosticsProcessor.EventHub
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(SendLogToNewRelic),
-                "Sending message to New Relic..."
+                "message:Sending message to New Relic..."
             );
         }
 
         /// <summary>
         ///     Log message sent to New Relic.
         /// </summary>
+        /// <param name="httpStatusCode">
+        ///     HTTP status code.
+        /// </param>
         /// <param name="responseMessage">
         ///     Response message from New Relic.
         /// </param>
-        private void LogMessageToNewRelicSent(string responseMessage)
+        private void LogMessageToNewRelicSent(int httpStatusCode, string responseMessage)
         {
             CustomLogger.Log(
                 _logger,
                 LogLevel.Information,
                 nameof(EventHubHandler),
                 nameof(SendLogToNewRelic),
-                $"Message is sent to New Relic successfully: {responseMessage}"
+                $"message:Message is sent to New Relic successfully," +
+                $"statusCode:{httpStatusCode}," +
+                $"responseMessage:{responseMessage}"
             );
         }
 
@@ -344,7 +356,9 @@ namespace DiagnosticsProcessor.EventHub
                 LogLevel.Error,
                 nameof(EventHubHandler),
                 nameof(SendLogToNewRelic),
-                $"Message is sent to New Relic successfully: {responseMessage}"
+                $"message:Message is sent to New Relic successfully," +
+                $"statusCode:{httpStatusCode}," +
+                $"responseMessage:{responseMessage}"
             );
         }
 
@@ -358,7 +372,9 @@ namespace DiagnosticsProcessor.EventHub
                 LogLevel.Error,
                 nameof(EventHubHandler),
                 nameof(ProcessEventHandler),
-                $"Unexpected error! Message: {e.Message}. InnerException:{e.InnerException}."
+                $"message:Unexpected error occurred," +
+                $"errorMessage:{e.Message}," +
+                $"innerException:{e.InnerException}."
             );
         }
     }
