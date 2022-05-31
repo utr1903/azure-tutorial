@@ -2,7 +2,7 @@
 
 # Timeseries Insight Environment
 resource "azurerm_iot_time_series_insights_gen2_environment" "iot" {
-  name                = local.project_timeseries_insight_name
+  name                = var.project_timeseries_insight_name
   resource_group_name = azurerm_resource_group.iot.name
   location            = azurerm_resource_group.iot.location
 
@@ -17,7 +17,7 @@ resource "azurerm_iot_time_series_insights_gen2_environment" "iot" {
 
 # Timeseries Insight Source - Event Hub
 resource "azurerm_iot_time_series_insights_event_source_eventhub" "iot" {
-  name           = local.project_event_hub_name
+  name           = var.project_event_hub_name
   location       = azurerm_resource_group.iot.location
   environment_id = azurerm_iot_time_series_insights_gen2_environment.iot.id
 

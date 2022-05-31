@@ -10,10 +10,11 @@ locationLong="westeurope"
 locationShort="euw"
 stageLong="dev"
 stageShort="d"
-instance="001"
+instance="003"
 
 shared="shared"
 platform="platform"
+diagnostics="diagnostics"
 
 ### Set variables
 
@@ -22,8 +23,28 @@ sharedResourceGroupName="rg${project}${locationShort}${shared}x000"
 sharedStorageAccountName="st${project}${locationShort}${shared}x000"
 
 # Platform
-resourceGroupName="rg${project}${locationShort}${platform}${stageShort}${instance}"
-aksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
+projectResourceGroupName="rg${project}${locationShort}${platform}${stageShort}${instance}"
+
+projectIotHubName="iot${project}${locationShort}${platform}${stageShort}${instance}"
+
+projectServiceBusNamespaceName="sb${project}${locationShort}${platform}${stageShort}${instance}"
+projectServiceBusQueueNameInput="${projectIotHubName}input"
+
+projectEventHubNamespaceName="ehn${project}${locationShort}${platform}${stageShort}${instance}"
+projectEventHubName="eh${project}${locationShort}${platform}${stageShort}${instance}"
+projectEventHubConsumerGroupNameTsi="tsi"
+projectEventHubConsumerGroupNameStats="statsprocessor"
+
+diagnosticsEventHubName="eh${project}${locationShort}${diagnostics}${stageShort}${instance}"
+diagnosticsEventHubConsumerGroupName="diagnostics"
+
+projectStorageAccountName="st${project}${locationShort}${platform}${stageShort}${instance}"
+projectBlobContainerNameStats="statsprocessor"
+
+projectTimeseriesInsightsName="tsi${project}${locationShort}${platform}${stageShort}${instance}"
+
+projectAksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
+projectAksNodepoolName="rgaks${project}${locationShort}${platform}${stageShort}${instance}"
 
 ### Shared Terraform storage account
 
@@ -108,12 +129,27 @@ terraform -chdir=../terraform/01_platform plan \
   -var stage_short=$stageShort \
   -var stage_long=$stageLong \
   -var instance=$instance \
+  -var project_resource_group_name=$projectResourceGroupName \
+  -var project_service_bus_namespace_name=$projectServiceBusNamespaceName \
+  -var project_service_bus_queue_name_input=$projectServiceBusQueueNameInput \
+  -var project_event_hub_namespace_name=$projectEventHubNamespaceName \
+  -var project_event_hub_name=$projectEventHubName \
+  -var project_event_hub_consumer_group_name_tsi=$projectEventHubConsumerGroupNameTsi \
+  -var project_event_hub_consumer_group_name_stats=$projectEventHubConsumerGroupNameStats \
+  -var project_iot_hub_name=$projectIotHubName \
+  -var project_storage_account_name=$projectStorageAccountName \
+  -var project_blob_container_name_stats=$projectBlobContainerNameStats \
+  -var project_timeseries_insight_name=$projectTimeseriesInsightsName \
+  -var project_kubernetes_cluster_name=$projectAksName \
+  -var project_kubernetes_cluster_nodepool_name=$projectAksNodepoolName \
+  -var diagnostics_event_hub_name=$projectEventHubName \
+  -var diagnostics_event_hub_consumer_group_name=$diagnosticsEventHubConsumerGroupName \
   -out "./tfplan"
 
 terraform -chdir=../terraform/01_platform apply tfplan
 
 # Get AKS credentials
 az aks get-credentials \
-    --resource-group $resourceGroupName \
-    --name $aksName \
+    --resource-group $projectResourceGroupName \
+    --name $projectAksName \
     --overwrite-existing

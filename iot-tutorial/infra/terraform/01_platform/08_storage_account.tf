@@ -2,7 +2,7 @@
 
 # Storage Account
 resource "azurerm_storage_account" "iot" {
-  name                = local.project_storage_account_name
+  name                = var.project_storage_account_name
   resource_group_name = azurerm_resource_group.iot.name
   location            = azurerm_resource_group.iot.location
 
@@ -12,7 +12,7 @@ resource "azurerm_storage_account" "iot" {
 
 # Blob Container - Stats Processor
 resource "azurerm_storage_container" "stats_processor" {
-  name                  = "statsprocessor"
+  name                  = var.project_blob_container_name_stats
   storage_account_name  = azurerm_storage_account.iot.name
   container_access_type = "private"
 }
