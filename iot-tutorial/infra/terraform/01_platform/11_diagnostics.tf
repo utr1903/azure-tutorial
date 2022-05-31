@@ -122,7 +122,7 @@ resource "azurerm_monitor_diagnostic_setting" "event_hub" {
 }
 #########
 
-### IoT Hub ###
+### Storage Account ###
 
 data "azurerm_monitor_diagnostic_categories" "storage_account" {
   resource_id = azurerm_storage_account.iot.id
@@ -149,6 +149,46 @@ resource "azurerm_monitor_diagnostic_setting" "storage_account" {
 
   dynamic "metric" {
     for_each = data.azurerm_monitor_diagnostic_categories.storage_account.metrics
+
+    content {
+      category = metric.value
+      enabled  = true
+
+      retention_policy {
+        enabled = false
+      }
+    }
+  }
+}
+#########
+
+### Timeseries Insights ###
+
+data "azurerm_monitor_diagnostic_categories" "tsi" {
+  resource_id = azurerm_iot_time_series_insights_gen2_environment.iot.id
+}
+
+resource "azurerm_monitor_diagnostic_setting" "tsi" {
+  name                           = var.project_timeseries_insight_name
+  target_resource_id             = azurerm_iot_time_series_insights_gen2_environment.iot.id
+  eventhub_name                  = var.diagnostics_event_hub_name
+  eventhub_authorization_rule_id = azurerm_eventhub_namespace_authorization_rule.diagnostics.id
+
+  dynamic "log" {
+    for_each = data.azurerm_monitor_diagnostic_categories.tsi.logs
+
+    content {
+      category = log.value
+      enabled  = true
+
+      retention_policy {
+        enabled = false
+      }
+    }
+  }
+
+  dynamic "metric" {
+    for_each = data.azurerm_monitor_diagnostic_categories.tsi.metrics
 
     content {
       category = metric.value
