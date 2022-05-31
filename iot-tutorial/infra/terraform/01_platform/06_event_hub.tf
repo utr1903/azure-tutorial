@@ -64,9 +64,7 @@ resource "azurerm_eventhub_authorization_rule" "stats_processor" {
 }
 ###########
 
-###################
-### Diagnostics ###
-###################
+
 
 # Event Hub
 resource "azurerm_eventhub" "diagnostics" {
@@ -83,17 +81,16 @@ resource "azurerm_eventhub_consumer_group" "diagnostics" {
   name                = var.diagnostics_event_hub_consumer_group_name
   resource_group_name = azurerm_resource_group.iot.name
   namespace_name      = azurerm_eventhub_namespace.iot.name
-  eventhub_name       = azurerm_eventhub.iot.name
+  eventhub_name       = azurerm_eventhub.diagnostics.name
 }
 
 # Event Hub Auth Rule - Diagnostics
-resource "azurerm_eventhub_authorization_rule" "diagnostics" {
+resource "azurerm_eventhub_namespace_authorization_rule" "diagnostics" {
   name                = var.diagnostics_event_hub_consumer_group_name
   namespace_name      = azurerm_eventhub_namespace.iot.name
-  eventhub_name       = azurerm_eventhub.iot.name
   resource_group_name = azurerm_resource_group.iot.name
 
   listen = true
-  send   = false
-  manage = false
+  send   = true
+  manage = true
 }

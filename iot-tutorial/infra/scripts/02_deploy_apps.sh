@@ -10,7 +10,7 @@ locationLong="westeurope"
 locationShort="euw"
 stageLong="dev"
 stageShort="d"
-instance="001"
+instance="003"
 
 platform="platform"
 stats="stats"

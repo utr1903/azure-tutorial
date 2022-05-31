@@ -11,7 +11,7 @@ locationShort="euw"
 platform="platform"
 stageLong="dev"
 stageShort="d"
-instance="001"
+instance="003"
 
 ### Set variables
 
