@@ -1,0 +1,15 @@
+name: diagsprocessor
+namespace: diagsprocessor
+port: 80
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
