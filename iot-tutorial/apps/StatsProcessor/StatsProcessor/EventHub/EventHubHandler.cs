@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
@@ -14,6 +16,9 @@ namespace StatsProcessor.EventHub
 {
     public class EventHubHandler : IHostedService
     {
+        private const string DEVICE_VALUE_THRESHOLD_EXCEEDED = "threshold_exceeded";
+        private const double DEVICE_VALUE_THRESHOLD = 28.0;
+
         private readonly ILogger _logger;
 
         private EventProcessorClient _processor;
@@ -172,16 +177,28 @@ namespace StatsProcessor.EventHub
         /// <param name="deviceMessage"></param>
         private void SendMessageToNewrelic(DeviceMessage deviceMessage)
         {
-            LogSendingMessageToNewrelic();
+            if (deviceMessage.DeviceValue > DEVICE_VALUE_THRESHOLD)
+            {
+                LogSendingMessageToNewrelic();
 
-            var agent = NewRelic.Api.Agent.NewRelic.GetAgent();
-            var transaction = agent.CurrentTransaction;
+                //var agent = NewRelic.Api.Agent.NewRelic.GetAgent();
+                //var transaction = agent.CurrentTransaction;
 
-            transaction
-                .AddCustomAttribute("deviceName", deviceMessage.DeviceName)
-                .AddCustomAttribute("deviceValue", deviceMessage.DeviceValue);
+                //transaction
+                //    .AddCustomAttribute("deviceName", deviceMessage.DeviceName)
+                //    .AddCustomAttribute("deviceValue", deviceMessage.DeviceValue);
 
-            LogMessageToNewrelicSent();
+                var eventAttributes = new Dictionary<string, object>
+                {
+                    { "deviceName", deviceMessage.DeviceName },
+                    { "deviceValue", deviceMessage.DeviceValue }
+                };
+
+                NewRelic.Api.Agent.NewRelic.RecordCustomEvent(
+                    DEVICE_VALUE_THRESHOLD_EXCEEDED, eventAttributes.AsEnumerable());
+
+                LogMessageToNewrelicSent();
+            }
         }
 
         /// <summary>
