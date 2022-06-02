@@ -14,6 +14,8 @@
     <None Remove="CustomLogger\" />
     <None Remove="Exceptions\" />
     <None Remove="Controllers\" />
+    <None Remove="LogParser\" />
+    <None Remove="LogApi\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
@@ -26,5 +28,7 @@
     <Folder Include="Commons\" />
     <Folder Include="Exceptions\" />
     <Folder Include="Controllers\" />
+    <Folder Include="LogParser\" />
+    <Folder Include="LogApi\" />
   </ItemGroup>
 </Project>

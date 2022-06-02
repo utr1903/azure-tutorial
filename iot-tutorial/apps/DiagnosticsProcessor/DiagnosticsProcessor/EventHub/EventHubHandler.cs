@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
@@ -9,10 +6,10 @@ using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
 using DiagnosticsProcessor.Commons;
 using DiagnosticsProcessor.Exceptions;
+using DiagnosticsProcessor.LogApi;
+using DiagnosticsProcessor.LogParser;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace DiagnosticsProcessor.EventHub
 {
@@ -20,24 +17,31 @@ namespace DiagnosticsProcessor.EventHub
     {
         private readonly ILogger _logger;
 
-        private const string NEWRELIC_LOG_URI = "https://log-api.eu.newrelic.com/log/v1";
+        private AzureLogParserHandler _azureLogParserHandler;
+        private NewRelicLogApiHandler _newRelicLogApiHandler;
 
-        private HttpClient _httpClient;
         private EventProcessorClient _processor;
 
-        public EventHubHandler(ILogger<EventHubHandler> logger)
+        public EventHubHandler(
+            ILogger<EventHubHandler> logger
+        )
         {
             // Set logger.
             _logger = logger;
 
-            // Create HTTP client.
-            CreateHttpClient();
+            // Create Azure log parser handler.
+            CreateAzureLogParserHandler();
+
+            // Create New Relic log API handler.
+            CreateNewRelicLogApiHandler();
 
             // Create Event Hub processor client.
             CreateProcessorClient();
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(
+            CancellationToken cancellationToken
+        )
         {
             try
             {
@@ -51,7 +55,9 @@ namespace DiagnosticsProcessor.EventHub
             }
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(
+            CancellationToken cancellationToken
+        )
         {
             Task processingTask = Task.Run(() => {
                 LogStoppingEventHubProcessor();
@@ -61,22 +67,16 @@ namespace DiagnosticsProcessor.EventHub
         }
 
         /// <summary>
-        ///     Create HTTP client.
+        ///     Create Azure log parser handler.
         /// </summary>
-        private void CreateHttpClient()
-        {
-            _httpClient = new HttpClient();
+        private void CreateAzureLogParserHandler()
+            => _azureLogParserHandler = new AzureLogParserHandler(_logger);
 
-            //// Add content type as JSON.
-            //_httpClient.DefaultRequestHeaders
-            //    .Add("Content-Type", "application/json");
-
-            // Add New Relic license key.
-            var newRelicLicenseKey = Environment.GetEnvironmentVariable("NEWRELIC_LICENSE_KEY");
-
-            _httpClient.DefaultRequestHeaders
-                .Add("Api-Key", newRelicLicenseKey);
-        }
+        /// <summary>
+        ///     Create New Relic Log API handler.
+        /// </summary>
+        private void CreateNewRelicLogApiHandler()
+            => _newRelicLogApiHandler = new NewRelicLogApiHandler(_logger);
 
         /// <summary>
         ///     Creates Event Hub processor client.
@@ -85,17 +85,26 @@ namespace DiagnosticsProcessor.EventHub
         {
             LogCreatingEventHubProcessorClient();
 
-            var storageConnectionString = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_CONNECTION_STRING");
-            var blobContainerName = Environment.GetEnvironmentVariable("BLOB_CONTAINER_NAME");
+            var storageConnectionString = Environment
+                .GetEnvironmentVariable("STORAGE_ACCOUNT_CONNECTION_STRING");
 
-            var eventHubConnectionString = Environment.GetEnvironmentVariable("EVENT_HUB_CONNECTION_STRING");
-            var eventHubName = Environment.GetEnvironmentVariable("EVENT_HUB_NAME");
-            var eventHubConsumerGroup = Environment.GetEnvironmentVariable("EVENT_HUB_CONSUMER_GROUP_NAME");
+            var blobContainerName = Environment
+                .GetEnvironmentVariable("BLOB_CONTAINER_NAME");
+
+            var eventHubConnectionString = Environment
+                .GetEnvironmentVariable("EVENT_HUB_CONNECTION_STRING");
+
+            var eventHubName = Environment
+                .GetEnvironmentVariable("EVENT_HUB_NAME");
+
+            var eventHubConsumerGroup = Environment
+                .GetEnvironmentVariable("EVENT_HUB_CONSUMER_GROUP_NAME");
             
-            var blobStorageClient = new BlobContainerClient(storageConnectionString, blobContainerName);
+            var blobStorageClient = new BlobContainerClient(
+                storageConnectionString, blobContainerName);
 
-            _processor = new EventProcessorClient(blobStorageClient, eventHubConsumerGroup,
-                eventHubConnectionString, eventHubName);
+            _processor = new EventProcessorClient(blobStorageClient,
+                eventHubConsumerGroup, eventHubConnectionString, eventHubName);
 
             _processor.ProcessEventAsync += ProcessEventHandler;
             _processor.ProcessErrorAsync += ProcessErrorHandler;
@@ -106,11 +115,15 @@ namespace DiagnosticsProcessor.EventHub
         /// <summary>
         ///     Process Event Hub message to sent to New Relic.
         /// </summary>
-        /// <param name="eventArgs"></param>
+        /// <param name="eventArgs">
+        ///     Event Hub event object.
+        /// </param>
         /// <returns>
         ///     Task.
         /// </returns>
-        private async Task ProcessEventHandler(ProcessEventArgs eventArgs)
+        private async Task ProcessEventHandler(
+            ProcessEventArgs eventArgs
+        )
         {
             try
             {
@@ -122,7 +135,7 @@ namespace DiagnosticsProcessor.EventHub
             }
             catch (EventHubMessageNotParsedException e)
             {
-                LogEventHubMessageNotParsed(e.Log);
+                LogRawAzureLogMessageNotParsed(e.Log);
             }
             catch (Exception e)
             {
@@ -133,17 +146,77 @@ namespace DiagnosticsProcessor.EventHub
         /// <summary>
         ///     Handle error.
         /// </summary>
-        /// <param name="eventArgs"></param>
+        /// <param name="eventArgs">
+        ///     Event Hub event object.
+        /// </param>
         /// <returns>
         ///     Task.
         /// </returns>
-        private async Task ProcessErrorHandler(ProcessErrorEventArgs eventArgs)
+        private async Task ProcessErrorHandler(
+            ProcessErrorEventArgs eventArgs
+        )
         {
             Task processingTask = Task.Run(() => {
                 LogUnexpectedErrorOccured(eventArgs.Exception);
             });
 
             await Task.WhenAll(processingTask);
+        }
+
+        /// <summary>
+        ///     Parse raw Azure log message and create a dedicated
+        ///     New Relic log payload.
+        /// </summary>
+        /// <param name="eventData"></param>
+        /// <returns>
+        ///     New Relic log payload as string.
+        /// </returns>
+        private string ParseMessage(
+            EventData eventData
+        )
+            => _azureLogParserHandler
+                .Run(eventData.EventBody.ToString())
+                .ToString();
+
+        /// <summary>
+        ///     Send log payload to New Relic.
+        /// </summary>
+        /// <param name="logPayload">
+        ///     Log payload to be sent to New Relic.
+        /// </param>
+        private async Task SendLogToNewRelic(
+            string logPayload
+        )
+            => await _newRelicLogApiHandler.SendLog(logPayload);
+
+        /// <summary>
+        ///     Log the creation start of Event Hub
+        ///     processor client.
+        /// </summary>
+        private void LogCreatingEventHubProcessorClient()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(EventHubHandler),
+                nameof(CreateProcessorClient),
+                "Creating Event Hub processor..."
+            );
+        }
+
+        /// <summary>
+        ///     Log the successful creation of Event Hub
+        ///     processor client.
+        /// </summary>
+        private void LogEventHubProcessorClientCreated()
+        {
+            CustomLogger.Log(
+                _logger,
+                LogLevel.Information,
+                nameof(EventHubHandler),
+                nameof(CreateProcessorClient),
+                "Event Hub processor is created successfully."
+            );
         }
 
         /// <summary>
@@ -175,205 +248,36 @@ namespace DiagnosticsProcessor.EventHub
         }
 
         /// <summary>
-        ///     Parse event Hub message.
+        ///     Log raw Azure log message not parsed.
         /// </summary>
-        /// <param name="eventData"></param>
-        /// <returns>
-        ///     Log as string.
-        /// </returns>
-        private string ParseMessage(EventData eventData)
-        {
-            LogParsingEventHubMessage();
-
-            var log = eventData.EventBody.ToString();
-            try
-            {
-                JsonConvert.DeserializeObject<JObject>(log);
-
-                LogEventHubMessageParsed(log);
-
-                return log;
-            }
-            catch
-            {
-                throw new EventHubMessageNotParsedException(log);
-            }
-        }
-
-        /// <summary>
-        ///     Send log to New Relic.
-        /// </summary>
-        /// <param name="log">
-        ///     Log to be sent to New Relic.
-        /// </param>
-        private async Task SendLogToNewRelic(string log)
-        {
-            var httpContent = new StringContent(log, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(NEWRELIC_LOG_URI, httpContent);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseMessage = await response.Content.ReadAsStringAsync();
-                LogMessageToNewRelicSent((int)response.StatusCode,
-                    responseMessage);
-            }
-            else
-            {
-                LogMessageToNewRelicNotSent((int)response.StatusCode,
-                    response.ReasonPhrase);
-            }
-        }
-
-        /// <summary>
-        ///     Log the creation start of Event Hub
-        ///     processor client.
-        /// </summary>
-        private void LogCreatingEventHubProcessorClient()
+        private void LogRawAzureLogMessageNotParsed(
+            string exception
+        )
         {
             CustomLogger.Log(
                 _logger,
                 LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(CreateProcessorClient),
-                "message:Creating Event Hub processor..."
-            );
-        }
-
-        /// <summary>
-        ///     Log the successful creation of Event Hub
-        ///     processor client.
-        /// </summary>
-        private void LogEventHubProcessorClientCreated()
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(CreateProcessorClient),
-                "message:Event Hub processor is created successfully."
-            );
-        }
-
-        /// <summary>
-        ///     Log parsing Event Hub message.
-        /// </summary>
-        private void LogParsingEventHubMessage()
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                "message:Parsing Event Hub message..."
-            );
-        }
-
-        /// <summary>
-        ///     Log Event Hub message parsed.
-        /// </summary>
-        /// <param name="log">
-        ///     Log message.
-        /// </param>
-        private void LogEventHubMessageParsed(string log)
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                $"message:Event Hub message is parsed," +
-                $"parsedLog:{log}"
-            );
-        }
-
-        /// <summary>
-        ///     Log Event Hub message not parsed.
-        /// </summary>
-        /// <param name="log">
-        ///     Not parsed log.
-        /// </param>
-        private void LogEventHubMessageNotParsed(string log)
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Error,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                $"message:Event Hub log is not parsed," +
-                $"notParsedLog:{log}"
-            );
-        }
-
-        /// <summary>
-        ///     Log sending message to New Relic.
-        /// </summary>
-        private void LogSendingMessageToNewRelic()
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(SendLogToNewRelic),
-                "message:Sending message to New Relic..."
-            );
-        }
-
-        /// <summary>
-        ///     Log message sent to New Relic.
-        /// </summary>
-        /// <param name="httpStatusCode">
-        ///     HTTP status code.
-        /// </param>
-        /// <param name="responseMessage">
-        ///     Response message from New Relic.
-        /// </param>
-        private void LogMessageToNewRelicSent(int httpStatusCode, string responseMessage)
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(SendLogToNewRelic),
-                $"message:Message is sent to New Relic successfully," +
-                $"statusCode:{httpStatusCode}," +
-                $"responseMessage:{responseMessage}"
-            );
-        }
-
-        /// <summary>
-        ///     Log message not sent to New Relic.
-        /// </summary>
-        /// <param name="httpStatusCode">
-        ///     HTTP status code.
-        /// </param>
-        /// <param name="responseMessage">
-        ///     Response message from New Relic.
-        /// </param>
-        private void LogMessageToNewRelicNotSent(int httpStatusCode, string responseMessage)
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Error,
-                nameof(EventHubHandler),
-                nameof(SendLogToNewRelic),
-                $"message:Message is sent to New Relic successfully," +
-                $"statusCode:{httpStatusCode}," +
-                $"responseMessage:{responseMessage}"
+                nameof(AzureLogParserHandler),
+                nameof(ProcessEventHandler),
+                "Parsing raw Azure log message...",
+                exception: exception
             );
         }
 
         /// <summary>
         ///     Log unexpected error occurred.
         /// </summary>
-        private void LogUnexpectedErrorOccured(Exception e)
+        private void LogUnexpectedErrorOccured(
+            Exception e
+        )
         {
             CustomLogger.Log(
                 _logger,
                 LogLevel.Error,
                 nameof(EventHubHandler),
                 nameof(ProcessEventHandler),
-                $"message:Unexpected error occurred," +
-                $"errorMessage:{e.Message}," +
+                $"Unexpected error occurred.",
+                exception: $"errorMessage:{e.Message}," +
                 $"innerException:{e.InnerException}."
             );
         }

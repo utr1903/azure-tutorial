@@ -11,11 +11,11 @@ namespace DiagnosticsProcessor.Commons
             string className,
             string methodName,
             string message,
-            string deviceName = null,
-            string value = null
+            string data = null,
+            string exception = null
         )
         {
-            var log = CreateLogMessage(logLevel, className, methodName, message, deviceName, value);
+            var log = CreateLogMessage(logLevel, className, methodName, message, data, exception);
 
             switch (logLevel)
             {
@@ -45,8 +45,8 @@ namespace DiagnosticsProcessor.Commons
             string className,
             string methodName,
             string message,
-            string deviceName,
-            string value
+            string data,
+            string exception
         )
         {
             var log = $"logLevel:{logLevel}," +
@@ -54,11 +54,11 @@ namespace DiagnosticsProcessor.Commons
                 $"methodName:{methodName}," +
                 $"message:{message}";
 
-            if (deviceName != null)
-                log += $",deviceName:{deviceName}";
+            if (data != null)
+                log += $",data:{data}";
 
-            if (value != null)
-                log += $",value:{value}";
+            if (exception != null)
+                log += $",eception:{exception}";
 
             return log;
         }
