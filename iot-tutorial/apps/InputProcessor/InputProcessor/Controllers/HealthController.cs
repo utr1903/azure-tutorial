@@ -8,9 +8,9 @@ namespace InputProcessor.Controllers
     [Route("health")]
     public class HealthController : Controller
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
-        public HealthController(ILogger logger)
+        public HealthController(ILogger<HealthController> logger)
         {
             _logger = logger;
         }
