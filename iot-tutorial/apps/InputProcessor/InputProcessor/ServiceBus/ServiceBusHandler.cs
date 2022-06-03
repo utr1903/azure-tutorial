@@ -1,8 +1,8 @@
 ﻿using Azure.Messaging.ServiceBus;
-using InputProcessor.Commons;
+using Commons.Logging;
+using Commons.Models;
 using InputProcessor.EventHub;
 using InputProcessor.InfluxDb;
-using InputProcessor.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -25,7 +25,9 @@ namespace InputProcessor.ServiceBus
         private ServiceBusClient _client;
         private ServiceBusProcessor _processor;
 
-        public ServiceBusHandler(ILogger<ServiceBusHandler> logger)
+        public ServiceBusHandler(
+            ILogger<ServiceBusHandler> logger
+        )
         {
             // Set logger.
             _logger = logger;
@@ -103,7 +105,9 @@ namespace InputProcessor.ServiceBus
         /// <returns>
         ///     Task.
         /// </returns>
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(
+            CancellationToken cancellationToken
+        )
         {
             try
             {
@@ -127,7 +131,9 @@ namespace InputProcessor.ServiceBus
         /// <returns>
         ///     Task.
         /// </returns>
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(
+            CancellationToken cancellationToken
+        )
         {
             await _processor.DisposeAsync();
             await _client.DisposeAsync();
@@ -141,7 +147,9 @@ namespace InputProcessor.ServiceBus
         /// <returns>
         ///     Task.
         /// </returns>
-        private async Task MessageHandler(ProcessMessageEventArgs args)
+        private async Task MessageHandler(
+            ProcessMessageEventArgs args
+        )
         {
             try
             {
@@ -169,7 +177,9 @@ namespace InputProcessor.ServiceBus
         /// <returns>
         ///     DeviceMessage.
         /// </returns>
-        private DeviceMessage ParseMessage(ServiceBusReceivedMessage message)
+        private DeviceMessage ParseMessage(
+            ServiceBusReceivedMessage message
+        )
         {
             LogParsingServiceBusMessage();
 
@@ -190,7 +200,9 @@ namespace InputProcessor.ServiceBus
         /// <returns>
         ///     Task.
         /// </returns>
-        private async Task SendMessageToEventHub(DeviceMessage deviceMessage)
+        private async Task SendMessageToEventHub(
+            DeviceMessage deviceMessage
+        )
             => await _eventHubHandler.SendMessage(deviceMessage);
 
         /// <summary>
@@ -202,7 +214,9 @@ namespace InputProcessor.ServiceBus
         /// <returns>
         ///     Task.
         /// </returns>
-        private async Task WriteMessageToInfluxDb(DeviceMessage deviceMessage)
+        private async Task WriteMessageToInfluxDb(
+            DeviceMessage deviceMessage
+        )
             => await _influxDbHandler.WriteMessage(deviceMessage);
 
         /// <summary>
@@ -212,7 +226,9 @@ namespace InputProcessor.ServiceBus
         /// <returns>
         ///     Task.
         /// </returns>
-        private Task ErrorHandler(ProcessErrorEventArgs args)
+        private Task ErrorHandler(
+            ProcessErrorEventArgs args
+        )
         {
             LogServiceBusErrorOccured(args.Exception);
             return Task.CompletedTask;
@@ -224,11 +240,11 @@ namespace InputProcessor.ServiceBus
         private void LogCreatingServiceBusProcessor()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(ServiceBusHandler),
-                nameof(CreateServiceBusProcessor),
-                "Creating Service Bus processor..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(ServiceBusHandler),
+                methodName: nameof(CreateServiceBusProcessor),
+                message: "Creating Service Bus processor..."
             );
         }
 
@@ -238,11 +254,11 @@ namespace InputProcessor.ServiceBus
         private void LogServiceBusProcessorCreated()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(ServiceBusHandler),
-                nameof(CreateServiceBusProcessor),
-                "Service Bus processor is created successfully."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(ServiceBusHandler),
+                methodName: nameof(CreateServiceBusProcessor),
+                message: "Service Bus processor is created successfully."
             );
         }
 
@@ -252,11 +268,11 @@ namespace InputProcessor.ServiceBus
         private void LogStartingServiceBusProcessor()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(ServiceBusHandler),
-                nameof(ParseMessage),
-                "Starting Service Bus processor..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(ServiceBusHandler),
+                methodName: nameof(ParseMessage),
+                message: "Starting Service Bus processor..."
             );
         }
 
@@ -266,11 +282,11 @@ namespace InputProcessor.ServiceBus
         private void LogParsingServiceBusMessage()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(ServiceBusHandler),
-                nameof(ParseMessage),
-                "Parsing Service Bus message..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(ServiceBusHandler),
+                methodName: nameof(ParseMessage),
+                message: "Parsing Service Bus message..."
             );
         }
 
@@ -280,39 +296,45 @@ namespace InputProcessor.ServiceBus
         private void LogServiceBusMessageParsed()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(ServiceBusHandler),
-                nameof(ParseMessage),
-                "Service Bus message parsed..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(ServiceBusHandler),
+                methodName: nameof(ParseMessage),
+                message: "Service Bus message parsed..."
             );
         }
 
         /// <summary>
         ///     Log unexpected error occurred.
         /// </summary>
-        private void LogUnexpectedErrorOccured(Exception e)
+        private void LogUnexpectedErrorOccured(
+            Exception e
+        )
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Error,
-                nameof(ServiceBusHandler),
-                nameof(MessageHandler),
-                $"Unexpected error! Message: {e.Message}. InnerException:{e.InnerException}."
+                logger: _logger,
+                logLevel: LogLevel.Error,
+                className: nameof(ServiceBusHandler),
+                methodName: nameof(MessageHandler),
+                message: "Unexpected error occurred!",
+                exception: $"message:{e.Message},innerException:{e.InnerException}"
             );
         }
 
         /// <summary>
         ///     Log Service Bus error occurred.
         /// </summary>
-        private void LogServiceBusErrorOccured(Exception e)
+        private void LogServiceBusErrorOccured(
+            Exception e
+        )
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Error,
-                nameof(ServiceBusHandler),
-                nameof(ErrorHandler),
-                $"Service Bus error! Message: {e.Message}. InnerException:{e.InnerException}."
+                logger: _logger,
+                logLevel: LogLevel.Error,
+                className: nameof(ServiceBusHandler),
+                methodName: nameof(ErrorHandler),
+                message: "Service Bus error occurred!",
+                exception: $"message:{e.Message},innerException:{e.InnerException}"
             );
         }
     }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
-using DiagnosticsProcessor.Commons;
+using Commons.Logging;
 using DiagnosticsProcessor.Exceptions;
 using DiagnosticsProcessor.LogApi;
 using DiagnosticsProcessor.LogParser;

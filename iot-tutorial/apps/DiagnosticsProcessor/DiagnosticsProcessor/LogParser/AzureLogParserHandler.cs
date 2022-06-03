@@ -1,5 +1,5 @@
 ﻿using System;
-using DiagnosticsProcessor.Commons;
+using Commons.Logging;
 using DiagnosticsProcessor.Exceptions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

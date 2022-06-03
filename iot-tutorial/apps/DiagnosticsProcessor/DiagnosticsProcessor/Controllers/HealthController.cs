@@ -1,5 +1,4 @@
-﻿using System;
-using DiagnosticsProcessor.Commons;
+﻿using Commons.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -20,11 +19,11 @@ namespace DiagnosticsProcessor.Controllers
         public ActionResult CheckHealth()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(HealthController),
-                nameof(CheckHealth),
-                "OK"
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(HealthController),
+                methodName: nameof(CheckHealth),
+                message: "OK"
             );
             return new OkObjectResult("OK!");
         }

@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Commons.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using StatsProcessor.Commons;
 
 namespace StatsProcessor.Controllers
 {
@@ -11,7 +10,9 @@ namespace StatsProcessor.Controllers
     {
         private readonly ILogger _logger;
 
-        public HealthController(ILogger<HealthController> logger)
+        public HealthController(
+            ILogger<HealthController> logger
+        )
         {
             _logger = logger;
         }
@@ -20,11 +21,11 @@ namespace StatsProcessor.Controllers
         public ActionResult CheckHealth()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(HealthController),
-                nameof(CheckHealth),
-                "OK"
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(HealthController),
+                methodName: nameof(CheckHealth),
+                message: "OK"
             );
             return new OkObjectResult("OK!");
         }

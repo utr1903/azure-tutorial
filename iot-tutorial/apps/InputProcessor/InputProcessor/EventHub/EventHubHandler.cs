@@ -1,7 +1,7 @@
 ﻿using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
-using InputProcessor.Commons;
-using InputProcessor.Models;
+using Commons.Logging;
+using Commons.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -15,7 +15,9 @@ namespace InputProcessor.EventHub
 
         private EventHubProducerClient _eventHubProducerClient;
 
-        public EventHubHandler(ILogger logger)
+        public EventHubHandler(
+            ILogger logger
+        )
         {
             _logger = logger;
         }
@@ -45,7 +47,9 @@ namespace InputProcessor.EventHub
         /// <returns>
         ///     Task.
         /// </returns>
-        public async Task SendMessage(DeviceMessage deviceMessage)
+        public async Task SendMessage(
+            DeviceMessage deviceMessage
+        )
         {
             var messageAsString = JsonConvert.SerializeObject(deviceMessage);
             var eventBatch = await _eventHubProducerClient.CreateBatchAsync();
@@ -67,11 +71,11 @@ namespace InputProcessor.EventHub
         private void LogCreatingEventHubProducerClient()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(CreateProducerClient),
-                "Creating Event Hub connection..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(CreateProducerClient),
+                message: "Creating Event Hub connection..."
             );
         }
 
@@ -82,11 +86,11 @@ namespace InputProcessor.EventHub
         private void LogEventHubProducerClientCreated()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(CreateProducerClient),
-                "Event Hub connection is created successfully."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(CreateProducerClient),
+                message: "Event Hub connection is created successfully."
             );
         }
 
@@ -101,13 +105,13 @@ namespace InputProcessor.EventHub
         )
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(SendMessage),
-                "Message is successfully added to batch.",
-                deviceMessage.DeviceName,
-                deviceMessage.DeviceValue.ToString()
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(SendMessage),
+                message: "Message is successfully added to batch.",
+                data: $"deviceName:{deviceMessage.DeviceName}," +
+                $"deviceValue:{deviceMessage.DeviceValue}"
             );
         }
 
@@ -122,13 +126,13 @@ namespace InputProcessor.EventHub
         )
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Error,
-                nameof(EventHubHandler),
-                nameof(SendMessage),
-                "Message is failed to be added to batch.",
-                deviceMessage.DeviceName,
-                deviceMessage.DeviceValue.ToString()
+                logger: _logger,
+                logLevel: LogLevel.Error,
+                className: nameof(EventHubHandler),
+                methodName: nameof(SendMessage),
+                message: "Message is failed to be added to batch.",
+                data: $"deviceName:{deviceMessage.DeviceName}," +
+                $"deviceValue:{deviceMessage.DeviceValue}"
             );
         }
     }

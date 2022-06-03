@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using DiagnosticsProcessor.Commons;
+using Commons.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace DiagnosticsProcessor.LogApi

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
+using Commons.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using StatsProcessor.Commons;
 using StatsProcessor.Models;
 
 namespace StatsProcessor.EventHub
@@ -23,7 +23,9 @@ namespace StatsProcessor.EventHub
 
         private EventProcessorClient _processor;
 
-        public EventHubHandler(ILogger<EventHubHandler> logger)
+        public EventHubHandler(
+            ILogger<EventHubHandler> logger
+        )
         {
             // Set logger.
             _logger = logger;
@@ -32,7 +34,9 @@ namespace StatsProcessor.EventHub
             CreateProcessorClient();
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(
+            CancellationToken cancellationToken
+        )
         {
             try
             {
@@ -46,7 +50,9 @@ namespace StatsProcessor.EventHub
             }
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(
+            CancellationToken cancellationToken
+        )
         {
             Task processingTask = Task.Run(() => {
                 LogStoppingEventHubProcessor();
@@ -125,34 +131,6 @@ namespace StatsProcessor.EventHub
         }
 
         /// <summary>
-        ///     Log starting Event Hub processor.
-        /// </summary>
-        private void LogStartingEventHubProcessor()
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHandler),
-                nameof(StartAsync),
-                "Starting Event Hub processor..."
-            );
-        }
-
-        /// <summary>
-        ///     Log stopping Event Hub processor.
-        /// </summary>
-        private void LogStoppingEventHubProcessor()
-        {
-            CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHandler),
-                nameof(StopAsync),
-                "Stopping Event Hub processor..."
-            );
-        }
-
-        /// <summary>
         ///     Parse event Hub message.
         /// </summary>
         /// <param name="eventData"></param>
@@ -208,11 +186,11 @@ namespace StatsProcessor.EventHub
         private void LogCreatingEventHubProcessorClient()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(CreateProcessorClient),
-                "Creating Event Hub processor..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(CreateProcessorClient),
+                message: "Creating Event Hub processor..."
             );
         }
 
@@ -223,11 +201,39 @@ namespace StatsProcessor.EventHub
         private void LogEventHubProcessorClientCreated()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(CreateProcessorClient),
-                "Event Hub processor is created successfully."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(CreateProcessorClient),
+                message: "Event Hub processor is created successfully."
+            );
+        }
+
+        /// <summary>
+        ///     Log starting Event Hub processor.
+        /// </summary>
+        private void LogStartingEventHubProcessor()
+        {
+            CustomLogger.Log(
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(StartAsync),
+                message: "Starting Event Hub processor..."
+            );
+        }
+
+        /// <summary>
+        ///     Log stopping Event Hub processor.
+        /// </summary>
+        private void LogStoppingEventHubProcessor()
+        {
+            CustomLogger.Log(
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(StopAsync),
+                message: "Stopping Event Hub processor..."
             );
         }
 
@@ -237,11 +243,11 @@ namespace StatsProcessor.EventHub
         private void LogParsingEventHubMessage()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                "Parsing Event Hub message..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(ParseMessage),
+                message: "Parsing Event Hub message..."
             );
         }
 
@@ -251,22 +257,25 @@ namespace StatsProcessor.EventHub
         private void LogEventHubMessageParsed()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                "Event Hub message parsed."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(ParseMessage),
+                message: "Event Hub message parsed."
             );
         }
 
+        /// <summary>
+        ///     Log sending message to New Relic.
+        /// </summary>
         private void LogSendingMessageToNewrelic()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                "Sending message to New Relic..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(ParseMessage),
+                message: "Sending message to New Relic..."
             );
         }
 
@@ -276,11 +285,11 @@ namespace StatsProcessor.EventHub
         private void LogMessageToNewrelicSent()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                "Message is sent to New Relic successfully."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(ParseMessage),
+                message: "Message is sent to New Relic successfully."
             );
         }
 
@@ -290,11 +299,12 @@ namespace StatsProcessor.EventHub
         private void LogUnexpectedErrorOccured(Exception e)
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Error,
-                nameof(EventHubHandler),
-                nameof(ParseMessage),
-                $"Unexpected error! Message: {e.Message}. InnerException:{e.InnerException}."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(EventHubHandler),
+                methodName: nameof(ParseMessage),
+                message: "Unexpected error occurred!",
+                exception: $"message:{e.Message},innerException:{e.InnerException}"
             );
         }
     }

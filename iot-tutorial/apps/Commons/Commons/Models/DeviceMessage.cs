@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace InputProcessor.Models
+namespace Commons.Models
 {
     public class DeviceMessage
     {
@@ -19,6 +18,6 @@ namespace InputProcessor.Models
         public double DeviceValue { get; set; }
 
         [JsonProperty("tags")]
-        public Dictionary<string, string> Tags { get; set; } 
+        public Dictionary<string, string> Tags { get; set; }
     }
 }

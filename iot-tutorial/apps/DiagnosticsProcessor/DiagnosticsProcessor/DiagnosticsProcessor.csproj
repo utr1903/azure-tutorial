@@ -16,19 +16,26 @@
     <None Remove="Controllers\" />
     <None Remove="LogParser\" />
     <None Remove="LogApi\" />
+    <None Remove="Microsoft.Extensions.Logging" />
+    <None Remove="Commons" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NewRelic.Agent" Version="9.8.1" />
     <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.7.0" />
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.25" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EventHub\" />
-    <Folder Include="Commons\" />
     <Folder Include="Exceptions\" />
     <Folder Include="Controllers\" />
     <Folder Include="LogParser\" />
     <Folder Include="LogApi\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Commons">
+      <HintPath>..\..\Commons\Commons\bin\Release\netcoreapp3.1\Commons.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

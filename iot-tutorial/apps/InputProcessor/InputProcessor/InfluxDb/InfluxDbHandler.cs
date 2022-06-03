@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Commons.Logging;
+using Commons.Models;
 using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
-using InputProcessor.Commons;
-using InputProcessor.Models;
 using Microsoft.Extensions.Logging;
 
 namespace InputProcessor.InfluxDb
@@ -22,7 +22,9 @@ namespace InputProcessor.InfluxDb
 
         private WriteApiAsync _writeApi;
 
-        public InfluxDbHandler(ILogger logger)
+        public InfluxDbHandler(
+            ILogger logger
+        )
         {
             _logger = logger;
             
@@ -74,7 +76,9 @@ namespace InputProcessor.InfluxDb
         /// <returns>
         ///     Task.
         /// </returns>
-        public async Task WriteMessage(DeviceMessage deviceMessage)
+        public async Task WriteMessage(
+            DeviceMessage deviceMessage
+        )
         {
             LogWritingMessageToInfluxDb(deviceMessage);
 
@@ -105,11 +109,11 @@ namespace InputProcessor.InfluxDb
         private void LogEstablishingInfluxDbConnection()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(InfluxDbHandler),
-                nameof(CreateClient),
-                "Establishing connection to Influx DB..."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(InfluxDbHandler),
+                methodName: nameof(CreateClient),
+                message: "Establishing connection to Influx DB..."
             );
         }
 
@@ -119,11 +123,11 @@ namespace InputProcessor.InfluxDb
         private void LogInfluxDbConnectionEstablished()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(InfluxDbHandler),
-                nameof(CreateClient),
-                "Connection to InfluxDB is established successfully."
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(InfluxDbHandler),
+                methodName: nameof(CreateClient),
+                message: "Connection to Influx DB is established successfully."
             );
         }
 
@@ -133,11 +137,11 @@ namespace InputProcessor.InfluxDb
         private void LogTryingInfluxDbConnection()
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Warning,
-                nameof(InfluxDbHandler),
-                nameof(CreateClient),
-                "Trying connection to Influx DB..."
+                logger: _logger,
+                logLevel: LogLevel.Warning,
+                className: nameof(InfluxDbHandler),
+                methodName: nameof(CreateClient),
+                message: "Trying connection to Influx DB..."
             );
         }
 
@@ -152,13 +156,13 @@ namespace InputProcessor.InfluxDb
         )
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(InfluxDbHandler),
-                nameof(WriteMessage),
-                "Writing to Influx DB...",
-                deviceMessage.DeviceName,
-                deviceMessage.DeviceValue.ToString()
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(InfluxDbHandler),
+                methodName: nameof(WriteMessage),
+                message: "Writing to Influx DB...",
+                data: $"deviceName:{deviceMessage.DeviceName}," +
+                $"deviceValue:{deviceMessage.DeviceValue}"
             );
         }
 
@@ -172,13 +176,13 @@ namespace InputProcessor.InfluxDb
         )
         {
             CustomLogger.Log(
-                _logger,
-                LogLevel.Information,
-                nameof(InfluxDbHandler),
-                nameof(WriteMessage),
-                "Message is successfully written into Influx DB.",
-                deviceMessage.DeviceName,
-                deviceMessage.DeviceValue.ToString()
+                logger: _logger,
+                logLevel: LogLevel.Information,
+                className: nameof(InfluxDbHandler),
+                methodName: nameof(WriteMessage),
+                message: "Message is successfully written into Influx DB.",
+                data: $"deviceName:{deviceMessage.DeviceName}," +
+                $"deviceValue:{deviceMessage.DeviceValue}"
             );
         }
     }
