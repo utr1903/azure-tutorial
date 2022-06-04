@@ -9,7 +9,7 @@ resource "azurerm_mysql_server" "iot" {
   administrator_login          = var.project
   administrator_login_password = "Admin@1903!"
 
-  sku_name   = "B_Gen4_1"
+  sku_name   = "B_Gen5_1"
   storage_mb = 5120
   version    = "8.0"
 
