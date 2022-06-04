@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageId>Utr1903.Azure.IotTutorial.Commons</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>utr1903</Authors>
+    <Company>utr1903</Company>
   </PropertyGroup>
 
   <ItemGroup>
