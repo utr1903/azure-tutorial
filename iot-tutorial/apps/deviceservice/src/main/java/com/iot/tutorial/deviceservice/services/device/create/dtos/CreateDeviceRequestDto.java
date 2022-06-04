@@ -11,7 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CreateDeviceRequestDto {
 
-    private String email;
-    private String firstName;
-    private String lastName;
+    private String name;
+    private String description;
 }

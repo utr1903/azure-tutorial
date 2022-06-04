@@ -14,7 +14,13 @@ import java.util.UUID;
 public class CreateDeviceResponseDto {
 
     private UUID id;
-    private String email;
-    private String firstName;
-    private String lastName;
+    private String name;
+    private String description;
+
+    public String toString() {
+        return "[" +
+                "id: " + id +
+                ",name: " + name +
+                "]";
+    }
 }

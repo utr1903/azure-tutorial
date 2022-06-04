@@ -1,4 +1,4 @@
-package com.iot.tutorial.deviceservice.commons;
+package com.iot.tutorial.deviceservice.commons.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

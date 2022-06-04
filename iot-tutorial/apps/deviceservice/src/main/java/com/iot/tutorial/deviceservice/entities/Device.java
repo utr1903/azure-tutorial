@@ -22,12 +22,16 @@ public class Device {
     @Id
     private UUID id;
 
-    @Column(name = "email", nullable = false)
-    private String email;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+    @Column(name = "description", nullable = false)
+    private String description;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
+    public String toString() {
+        return "[" +
+        "id: " + id +
+        ",name: " + name +
+        "]";
+    }
 }

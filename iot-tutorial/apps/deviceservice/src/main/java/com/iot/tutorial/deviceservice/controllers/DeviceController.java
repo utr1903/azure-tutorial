@@ -1,6 +1,6 @@
 package com.iot.tutorial.deviceservice.controllers;
 
-import com.iot.tutorial.deviceservice.commons.BaseResponseDto;
+import com.iot.tutorial.deviceservice.commons.dtos.BaseResponseDto;
 import com.iot.tutorial.deviceservice.services.device.create.CreateDeviceService;
 import com.iot.tutorial.deviceservice.services.device.create.dtos.CreateDeviceRequestDto;
 import com.iot.tutorial.deviceservice.services.device.create.dtos.CreateDeviceResponseDto;
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/devices")
 public class DeviceController {
 
     @Autowired
