@@ -83,3 +83,21 @@ resource "azurerm_kubernetes_cluster_node_pool" "diagnostics_processor" {
   min_count           = 1
   max_count           = 3
 }
+
+# Kubernetes Nodepool - Applications
+resource "azurerm_kubernetes_cluster_node_pool" "applications" {
+  name                  = "applications"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.iot.id
+  vm_size               = "Standard_DS2_v2"
+
+  orchestrator_version = "1.23.5"
+
+  node_labels = {
+    nodePoolName = "applications"
+  }
+
+  enable_auto_scaling = true
+  node_count          = 1
+  min_count           = 1
+  max_count           = 2
+}
