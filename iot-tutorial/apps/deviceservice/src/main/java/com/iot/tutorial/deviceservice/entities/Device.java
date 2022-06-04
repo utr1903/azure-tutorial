@@ -30,8 +30,8 @@ public class Device {
 
     public String toString() {
         return "[" +
-        "id: " + id +
-        ",name: " + name +
-        "]";
+                "id:" + id +
+                ",name:" + name +
+                "]";
     }
 }

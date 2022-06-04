@@ -1,13 +1,12 @@
 package com.iot.tutorial.deviceservice.services.device.create;
 
 import com.iot.tutorial.deviceservice.commons.dtos.BaseResponseDto;
-import com.iot.tutorial.deviceservice.commons.exceptions.BaseException;
-import com.iot.tutorial.deviceservice.commons.exceptions.DeviceWithNameAlreadyExistsException;
-import com.iot.tutorial.deviceservice.commons.exceptions.SavingToDatabaseFailedException;
+import com.iot.tutorial.deviceservice.commons.exceptions.*;
 import com.iot.tutorial.deviceservice.entities.Device;
 import com.iot.tutorial.deviceservice.repositories.DeviceRepository;
 import com.iot.tutorial.deviceservice.services.device.create.dtos.CreateDeviceRequestDto;
 import com.iot.tutorial.deviceservice.services.device.create.dtos.CreateDeviceResponseDto;
+import com.iot.tutorial.deviceservice.services.iot.AzureIotHubHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,9 @@ public class CreateDeviceService {
     @Autowired
     private DeviceRepository deviceRepository;
 
+    @Autowired
+    private AzureIotHubHandler azureIotHubHandler;
+
     public ResponseEntity<BaseResponseDto<CreateDeviceResponseDto>> run(
         CreateDeviceRequestDto requestDto
     ) {
@@ -36,15 +38,20 @@ public class CreateDeviceService {
             // Create device data.
             var deviceData = createDeviceData(requestDto);
 
+            // Create device in Azure.
+            createDeviceInAzure(deviceData.getId());
+
             // Save device into DB.
             saveDevice(deviceData);
 
-            return createCreatedResponse(deviceData);
+            return createSuccessfulResponse(deviceData);
         }
-        catch (DeviceWithNameAlreadyExistsException e) {
+        catch (DeviceWithNameAlreadyExistsException |
+               DeviceAlreadyExistsInAzureException e) {
             return createFailedResponse(e, HttpStatus.BAD_REQUEST);
         }
-        catch (SavingToDatabaseFailedException e) {
+        catch (SavingToDatabaseFailedException |
+               DeviceCouldNotBeCreatedInAzureException e) {
             return createFailedResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -68,7 +75,7 @@ public class CreateDeviceService {
         }
 
         logger.info("No device exists with the name [" +
-                deviceName + "]...");
+            deviceName + "]...");
     }
 
     private CreateDeviceResponseDto createDeviceData(
@@ -79,6 +86,13 @@ public class CreateDeviceService {
             requestDto.getName(),
             requestDto.getDescription()
         );
+    }
+
+    private void createDeviceInAzure(
+        UUID deviceId
+    ) throws DeviceCouldNotBeCreatedInAzureException,
+            DeviceAlreadyExistsInAzureException {
+        azureIotHubHandler.createDevice(deviceId.toString());
     }
 
     private void saveDevice(
@@ -113,7 +127,7 @@ public class CreateDeviceService {
     }
 
     private ResponseEntity<BaseResponseDto<CreateDeviceResponseDto>>
-        createCreatedResponse(
+    createSuccessfulResponse(
             CreateDeviceResponseDto deviceData
     ) {
 
@@ -129,7 +143,7 @@ public class CreateDeviceService {
 
     private ResponseEntity<BaseResponseDto<CreateDeviceResponseDto>>
         createFailedResponse(
-            BaseException e,
+            Exception e,
             HttpStatus httpStatus
     ) {
 

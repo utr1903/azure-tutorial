@@ -19,8 +19,8 @@ public class CreateDeviceResponseDto {
 
     public String toString() {
         return "[" +
-                "id: " + id +
-                ",name: " + name +
+                "id:" + id +
+                ",name:" + name +
                 "]";
     }
 }
