@@ -1,9 +1,9 @@
-package com.iot.tutorial.deviceservice.services.userservice.create;
+package com.iot.tutorial.deviceservice.services.device.create;
 
 import com.iot.tutorial.deviceservice.commons.BaseResponseDto;
-import com.iot.tutorial.deviceservice.repositories.UserRepository;
-import com.iot.tutorial.deviceservice.services.userservice.create.dtos.CreateUserRequestDto;
-import com.iot.tutorial.deviceservice.services.userservice.create.dtos.CreateUserResponseDto;
+import com.iot.tutorial.deviceservice.repositories.DeviceRepository;
+import com.iot.tutorial.deviceservice.services.device.create.dtos.CreateDeviceRequestDto;
+import com.iot.tutorial.deviceservice.services.device.create.dtos.CreateDeviceResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +14,17 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class CreateUserService {
+public class CreateDeviceService {
 
-    private final Logger logger = LoggerFactory.getLogger(CreateUserService.class);
+    private final Logger logger = LoggerFactory.getLogger(CreateDeviceService.class);
 
     @Autowired
-    private UserRepository userRepository;
+    private DeviceRepository userRepository;
 
-    public ResponseEntity<BaseResponseDto<CreateUserResponseDto>> run(
-        CreateUserRequestDto requestDto
+    public ResponseEntity<BaseResponseDto<CreateDeviceResponseDto>> run(
+        CreateDeviceRequestDto requestDto
     ) {
-        var userData = new CreateUserResponseDto(
+        var userData = new CreateDeviceResponseDto(
             UUID.randomUUID(),
             requestDto.getEmail(),
             requestDto.getFirstName(),

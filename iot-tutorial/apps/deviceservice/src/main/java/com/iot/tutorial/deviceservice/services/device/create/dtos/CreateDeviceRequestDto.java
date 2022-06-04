@@ -1,19 +1,16 @@
-package com.iot.tutorial.deviceservice.services.userservice.create.dtos;
+package com.iot.tutorial.deviceservice.services.device.create.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserResponseDto {
+public class CreateDeviceRequestDto {
 
-    private UUID id;
     private String email;
     private String firstName;
     private String lastName;
