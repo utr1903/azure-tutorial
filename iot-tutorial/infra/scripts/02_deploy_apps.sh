@@ -78,6 +78,14 @@ diagsprocessor["appName"]="DiagnosticsProcessor"
 diagsprocessor["port"]="80"
 diagsprocessor["nodePoolName"]="diagnostics"
 
+# Device Service
+declare -A deviceservice
+deviceservice["name"]="deviceservice"
+deviceservice["namespace"]="deviceservice"
+deviceservice["appName"]="deviceservice"
+deviceservice["port"]="8080"
+deviceservice["nodePoolName"]="app"
+
 ## Build & Push
 
 # Input Processor
@@ -108,6 +116,16 @@ docker build \
   --tag "${DOCKERHUB_NAME}/${diagsprocessor[name]}" \
   "../../apps/${diagsprocessor[appName]}/${diagsprocessor[appName]}/."
 docker push "${DOCKERHUB_NAME}/${diagsprocessor[name]}"
+echo -e "\n------\n"
+
+# Device Service
+echo -e "\n--- Device Service ---\n"
+docker build \
+    --build-arg newRelicAppName=${deviceservice[name]} \
+    --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+    --tag "${DOCKERHUB_NAME}/${deviceservice[name]}" \
+    "../../apps/${deviceservice[appName]}/."
+docker push "${DOCKERHUB_NAME}/${deviceservice[name]}"
 echo -e "\n------\n"
 
 #######################
@@ -313,4 +331,23 @@ helm upgrade ${diagsprocessor[name]} \
   ../charts/${diagsprocessor[appName]}
 
 echo -e " -> Diagnostics Processor is successfully deployed.\n"
+#########
+
+### Device Service ###
+echo "Deploying Device Service..." 
+
+helm upgrade ${deviceservice[name]} \
+  --install \
+  --wait \
+  --debug \
+  --create-namespace \
+  --namespace ${deviceservice[namespace]} \
+  --set name=${deviceservice[name]} \
+  --set nodePoolName=${deviceservice[nodePoolName]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set port=${deviceservice[port]} \
+  --set eventHubConsumerGroupName=$diagnosticsEventHubConsumerGroupName \
+  ../charts/${deviceservice[appName]}
+
+echo -e " -> Device Service is successfully deployed.\n"
 #########
