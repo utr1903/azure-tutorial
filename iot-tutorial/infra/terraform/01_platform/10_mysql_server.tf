@@ -22,12 +22,22 @@ resource "azurerm_mysql_server" "iot" {
   ssl_minimal_tls_version_enforced  = "TLS1_2"
 }
 
+# MySQL Firewall Rule - Azure Services
+resource "azurerm_mysql_firewall_rule" "azure_services" {
+  name                = "azure_services"
+  resource_group_name = azurerm_resource_group.iot.name
+  server_name         = azurerm_mysql_server.iot.name
+
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
 # MySQL Database - Device
 resource "azurerm_mysql_database" "device" {
   name                = "device"
   resource_group_name = azurerm_resource_group.iot.name
   server_name         = azurerm_mysql_server.iot.name
 
-  charset             = "utf8"
-  collation           = "utf8_unicode_ci"
+  charset   = "utf8"
+  collation = "utf8_unicode_ci"
 }
