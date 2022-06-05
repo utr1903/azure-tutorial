@@ -161,7 +161,6 @@ kubectl create namespace newrelic ; helm upgrade --install newrelic-bundle newre
 #########
 
 ### Ingress Controller ###
-
 echo "Deploying Ingress Controller ..."
 
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
@@ -264,7 +263,7 @@ storageAccountConnectionString=$(az storage account show-connection-string \
 
 deviceDbMysqlDatasourceUrl="jdbc:mysql://${projectMysqlServerName}\
 .mysql.database.azure.com:3306/${deviceDatabaseMysqlName}"
-deviceDbMysqlDatasourceUser="${project}@${projectMysqlServerName}"
+deviceDbMysqlDatasourceUsername="${project}@${projectMysqlServerName}"
 deviceDbMysqlDatasourcePassword="Admin@1903!"
 
 iotHubConnectionString=$(az iot hub connection-string show \

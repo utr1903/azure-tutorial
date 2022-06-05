@@ -39,8 +39,8 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 80
-            initialDelaySeconds: 30
+              port: {{ .Values.port }}
+            initialDelaySeconds: 120
             periodSeconds: 10
       nodeSelector:
         nodePoolName: {{ .Values.nodePoolName }}
