@@ -122,6 +122,11 @@ variable "project_timeseries_insight_name" {
   type    = string
 }
 
+# MySQL Server
+variable "project_mysql_server_name" {
+  type    = string
+}
+
 # Kubernetes Cluster
 variable "project_kubernetes_cluster_name" {
   type    = string

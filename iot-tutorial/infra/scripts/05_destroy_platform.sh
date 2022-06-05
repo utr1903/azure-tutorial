@@ -44,6 +44,8 @@ projectBlobContainerNameDiags="diagsprocessor"
 
 projectTimeseriesInsightsName="tsi${project}${locationShort}${platform}${stageShort}${instance}"
 
+projectMysqlServerName="mysql${project}${locationShort}${platform}${stageShort}${instance}"
+
 projectAksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
 projectAksNodepoolName="rgaks${project}${locationShort}${platform}${stageShort}${instance}"
 
@@ -68,6 +70,7 @@ terraform -chdir=../terraform/01_platform destroy \
   -var project_blob_container_name_stats=$projectBlobContainerNameStats \
   -var project_blob_container_name_diags=$projectBlobContainerNameDiags \
   -var project_timeseries_insight_name=$projectTimeseriesInsightsName \
+  -var project_mysql_server_name=$projectMysqlServerName \
   -var project_kubernetes_cluster_name=$projectAksName \
   -var project_kubernetes_cluster_nodepool_name=$projectAksNodepoolName \
   -var diagnostics_event_hub_name=$diagnosticsEventHubName \

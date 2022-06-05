@@ -17,6 +17,7 @@
     <None Remove="NewRelic.Agent" />
     <None Remove="Microsoft.Extensions.Logging" />
     <None Remove="Commons" />
+    <None Remove="utr1903.Azure.IotTutorial.Commons" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -31,10 +32,6 @@
     <PackageReference Include="InfluxDB.Client" Version="4.2.0" />
     <PackageReference Include="NewRelic.Agent" Version="9.8.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.25" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Commons">
-      <HintPath>..\..\Commons\Commons\bin\Release\netcoreapp3.1\Commons.dll</HintPath>
-    </Reference>
+    <PackageReference Include="utr1903.Azure.IotTutorial.Commons" Version="1.0.0" />
   </ItemGroup>
 </Project>

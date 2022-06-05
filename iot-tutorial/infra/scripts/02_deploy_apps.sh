@@ -36,6 +36,9 @@ projectStorageAccountName="st${project}${locationShort}${platform}${stageShort}$
 projectBlobContainerNameStats="statsprocessor"
 projectBlobContainerNameDiags="diagsprocessor"
 
+projectMysqlServerName="mysql${project}${locationShort}${platform}${stageShort}${instance}"
+deviceDatabaseMysqlName="device"
+
 projectAksName="aks${project}${locationShort}${platform}${stageShort}${instance}"
 
 # Influx DB
@@ -78,6 +81,14 @@ diagsprocessor["appName"]="DiagnosticsProcessor"
 diagsprocessor["port"]="80"
 diagsprocessor["nodePoolName"]="diagnostics"
 
+# Device Service
+declare -A deviceservice
+deviceservice["name"]="deviceservice"
+deviceservice["namespace"]="deviceservice"
+deviceservice["appName"]="deviceservice"
+deviceservice["port"]="8080"
+deviceservice["nodePoolName"]="applications"
+
 ## Build & Push
 
 # Input Processor
@@ -110,6 +121,16 @@ docker build \
 docker push "${DOCKERHUB_NAME}/${diagsprocessor[name]}"
 echo -e "\n------\n"
 
+# Device Service
+echo -e "\n--- Device Service ---\n"
+docker build \
+    --build-arg newRelicAppName=${deviceservice[name]} \
+    --build-arg newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+    --tag "${DOCKERHUB_NAME}/${deviceservice[name]}" \
+    "../../apps/${deviceservice[appName]}/."
+docker push "${DOCKERHUB_NAME}/${deviceservice[name]}"
+echo -e "\n------\n"
+
 #######################
 ### Helm Deployment ###
 #######################
@@ -121,48 +142,47 @@ kubectl apply -f https://download.newrelic.com/install/kubernetes/pixie/latest/p
 kubectl apply -f https://download.newrelic.com/install/kubernetes/pixie/latest/olm_crd.yaml && \
 helm repo add newrelic https://helm-charts.newrelic.com && helm repo update && \
 kubectl create namespace newrelic ; helm upgrade --install newrelic-bundle newrelic/nri-bundle \
-    --wait \
-    --debug \
-    --set global.licenseKey=$NEWRELIC_LICENSE_KEY \
-    --set global.cluster=$projectAksName \
-    --namespace=newrelic \
-    --set newrelic-infrastructure.privileged=true \
-    --set global.lowDataMode=true \
-    --set ksm.enabled=true \
-    --set kubeEvents.enabled=true \
-    --set prometheus.enabled=true \
-    --set logging.enabled=true \
-    --set newrelic-pixie.enabled=true \
-    --set newrelic-pixie.apiKey=$PIXIE_API_KEY \
-    --set pixie-chart.enabled=true \
-    --set pixie-chart.deployKey=$PIXIE_DEPLOY_KEY \
-    --set pixie-chart.clusterName=$projectAksName
+  --wait \
+  --debug \
+  --set global.licenseKey=$NEWRELIC_LICENSE_KEY \
+  --set global.cluster=$projectAksName \
+  --namespace=newrelic \
+  --set newrelic-infrastructure.privileged=true \
+  --set global.lowDataMode=true \
+  --set ksm.enabled=true \
+  --set kubeEvents.enabled=true \
+  --set prometheus.enabled=true \
+  --set logging.enabled=true \
+  --set newrelic-pixie.enabled=true \
+  --set newrelic-pixie.apiKey=$PIXIE_API_KEY \
+  --set pixie-chart.enabled=true \
+  --set pixie-chart.deployKey=$PIXIE_DEPLOY_KEY \
+  --set pixie-chart.clusterName=$projectAksName
 #########
 
 ### Ingress Controller ###
-
 echo "Deploying Ingress Controller ..."
 
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
 helm repo update; \
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-    --namespace nginx --create-namespace \
-    --wait \
-    --debug \
-    --set controller.replicaCount=1 \
-    --set controller.nodeSelector."kubernetes\.io/os"="linux" \
-    --set controller.image.image="ingress-nginx/controller" \
-    --set controller.image.tag="v1.1.1" \
-    --set controller.image.digest="" \
-    --set controller.service.externalTrafficPolicy=Local \
-    --set controller.admissionWebhooks.patch.nodeSelector."kubernetes\.io/os"="linux" \
-    --set controller.admissionWebhooks.patch.image.image="ingress-nginx/kube-webhook-certgen" \
-    --set controller.admissionWebhooks.patch.image.tag="v1.1.1" \
-    --set controller.admissionWebhooks.patch.image.digest="" \
-    --set defaultBackend.nodeSelector."kubernetes\.io/os"="linux" \
-    --set defaultBackend.image.image="defaultbackend-amd64" \
-    --set defaultBackend.image.tag="1.5" \
-    --set defaultBackend.image.digest=""
+  --namespace nginx --create-namespace \
+  --wait \
+  --debug \
+  --set controller.replicaCount=1 \
+  --set controller.nodeSelector."kubernetes\.io/os"="linux" \
+  --set controller.image.image="ingress-nginx/controller" \
+  --set controller.image.tag="v1.1.1" \
+  --set controller.image.digest="" \
+  --set controller.service.externalTrafficPolicy=Local \
+  --set controller.admissionWebhooks.patch.nodeSelector."kubernetes\.io/os"="linux" \
+  --set controller.admissionWebhooks.patch.image.image="ingress-nginx/kube-webhook-certgen" \
+  --set controller.admissionWebhooks.patch.image.tag="v1.1.1" \
+  --set controller.admissionWebhooks.patch.image.digest="" \
+  --set defaultBackend.nodeSelector."kubernetes\.io/os"="linux" \
+  --set defaultBackend.image.image="defaultbackend-amd64" \
+  --set defaultBackend.image.tag="1.5" \
+  --set defaultBackend.image.digest=""
 
 echo -e " -> Ingress Controller is successfully deployed.\n"
 #########
@@ -240,6 +260,17 @@ storageAccountConnectionString=$(az storage account show-connection-string \
   --resource-group $projectResourceGroupName \
   --name $projectStorageAccountName \
   | jq .connectionString)
+
+deviceDbMysqlDatasourceUrl="jdbc:mysql://${projectMysqlServerName}\
+.mysql.database.azure.com:3306/${deviceDatabaseMysqlName}"
+deviceDbMysqlDatasourceUsername="${project}@${projectMysqlServerName}"
+deviceDbMysqlDatasourcePassword="Admin@1903!"
+
+iotHubConnectionString=$(az iot hub connection-string show \
+  --resource-group $projectResourceGroupName \
+  --hub-name $projectIotHubName \
+  --key-type "primary" \
+  | jq .connectionString)
 #########
 
 ### Input Processor ###
@@ -313,4 +344,26 @@ helm upgrade ${diagsprocessor[name]} \
   ../charts/${diagsprocessor[appName]}
 
 echo -e " -> Diagnostics Processor is successfully deployed.\n"
+#########
+
+### Device Service ###
+echo "Deploying Device Service..." 
+
+helm upgrade ${deviceservice[name]} \
+  --install \
+  --wait \
+  --debug \
+  --create-namespace \
+  --namespace ${deviceservice[namespace]} \
+  --set name=${deviceservice[name]} \
+  --set nodePoolName=${deviceservice[nodePoolName]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set port=${deviceservice[port]} \
+  --set deviceDbMysqlDatasourceUrl=$deviceDbMysqlDatasourceUrl \
+  --set deviceDbMysqlDatasourceUsername=$deviceDbMysqlDatasourceUsername \
+  --set deviceDbMysqlDatasourcePassword=$deviceDbMysqlDatasourcePassword \
+  --set iotHubConnectionString=$iotHubConnectionString \
+  ../charts/${deviceservice[appName]}
+
+echo -e " -> Device Service is successfully deployed.\n"
 #########

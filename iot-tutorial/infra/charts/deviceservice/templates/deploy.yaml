@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+    nodePoolName: {{ .Values.nodePoolName }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+      nodePoolName: {{ .Values.nodePoolName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+        nodePoolName: {{ .Values.nodePoolName }}
+    spec:
+      containers:
+        - name: {{ .Values.name }}
+          image: "{{ .Values.dockerhubName }}/{{ .Values.name }}"
+          env:
+            - name: DEVICE_DB_MYSQL_DATASOURCE_URL
+              value: {{ .Values.deviceDbMysqlDatasourceUrl }}
+            - name: DEVICE_DB_MYSQL_DATASOURCE_USERNAME
+              value: {{ .Values.deviceDbMysqlDatasourceUsername }}
+            - name: DEVICE_DB_MYSQL_DATASOURCE_PASSWORD
+              value: {{ .Values.deviceDbMysqlDatasourcePassword }}
+            - name: IOT_HUB_CONNECTION_STRING
+              value: {{ .Values.iotHubConnectionString }}
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: 400m
+              memory: 1000Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.port }}
+            initialDelaySeconds: 120
+            periodSeconds: 10
+      nodeSelector:
+        nodePoolName: {{ .Values.nodePoolName }}
